@@ -1,0 +1,45 @@
+name: sugar
+description: "A joint couples's finance app."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ">=3.5.0 <4.0.0" 
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.3.4
+  flutter_dotenv: ^5.1.0
+  get: ^4.6.6
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+    - assets/images/
+    - assets/.env
+  fonts:
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Black.ttf
+        - asset: assets/fonts/Figtree-BlackItalic.ttf
+        - asset: assets/fonts/Figtree-Bold.ttf
+        - asset: assets/fonts/Figtree-BoldItalic.ttf
+        - asset: assets/fonts/Figtree-ExtraBold.ttf
+        - asset: assets/fonts/Figtree-ExtraBoldItalic.ttf
+        - asset: assets/fonts/Figtree-Italic.ttf
+        - asset: assets/fonts/Figtree-Light.ttf
+        - asset: assets/fonts/Figtree-LightItalic.ttf
+        - asset: assets/fonts/Figtree-Medium.ttf
+        - asset: assets/fonts/Figtree-MediumItalic.ttf
+        - asset: assets/fonts/Figtree-Regular.ttf
+        - asset: assets/fonts/Figtree-SemiBold.ttf
+        - asset: assets/fonts/Figtree-SemiBoldItalic.ttf
