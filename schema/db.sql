@@ -118,3 +118,5 @@ BEGIN
         );
     END LOOP;
 END $$;
+
+-- TODO: create a table for transactions and recurring transactions

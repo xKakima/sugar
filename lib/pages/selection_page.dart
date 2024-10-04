@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/components/background.dart';
-import 'package:sugar/invite_page.dart';
+import 'package:sugar/pages/invite_page.dart';
 
 class SelectionPage extends StatefulWidget {
   const SelectionPage({super.key});

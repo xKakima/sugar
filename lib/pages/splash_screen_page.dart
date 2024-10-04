@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/components/background.dart';
-import 'package:sugar/login_page.dart';
+import 'package:sugar/pages/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,6 +18,8 @@ class _SplashScreenState extends State<SplashScreen> {
   late Timer _timer;
   late int _loadDuration;
 
+  // Check the login status
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +31,13 @@ class _SplashScreenState extends State<SplashScreen> {
     _startLoading();
   }
 
-  void _startLoading() {
+  Future<void> _startLoading() async {
+    // Check the login status
+    final prefs = await SharedPreferences.getInstance();
+    //TODO REMOVE
+    await prefs.setBool('isLoggedIn', false);
+    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
     // 50 ms interval between each tick
     const duration = Duration(milliseconds: 50);
 
@@ -44,16 +53,18 @@ class _SplashScreenState extends State<SplashScreen> {
         if (_progress >= 1.0) {
           _progress = 1.0;
           _timer.cancel();
-          _goToLoginPage(); // Navigate to the login page when loading completes
+          _goToLoginPage(
+              isLoggedIn); // Navigate to the login page when loading completes
         }
       });
     });
   }
 
-  void _goToLoginPage() {
+  void _goToLoginPage(isLoggedIn) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const LoginPage(),
+        builder: (context) =>
+            isLoggedIn ? const Placeholder() : const LoginPage(),
       ),
     );
   }

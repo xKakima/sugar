@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/components/background.dart';
+import 'package:sugar/pages/home_page.dart';
+import 'package:sugar/components/day_picker.dart'; // Import the day picker component
 
 class MonthlyBudget extends StatefulWidget {
   const MonthlyBudget({super.key});
@@ -14,25 +16,15 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
   final TextEditingController _budgetController =
       TextEditingController(text: '10000');
 
-  // Variable to store selected reset date
-  DateTime? _selectedDate;
+  // Variable to store selected reset day
+  int? _selectedDay;
 
-  // Checkbox state
-  bool _isChecked = false;
-
-  // Function to show the date picker
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+  void _goToHomePage() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const HomePage(),
+      ),
     );
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    }
   }
 
   @override
@@ -86,19 +78,24 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
                   ),
                 ),
                 const SizedBox(height: 70),
-                // Text for Reset Date
+                // Text for Reset Day
                 const Text(
-                  'reset date',
+                  'reset day',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Date input
+                // Day input using GestureDetector
                 GestureDetector(
-                  onTap: () {
-                    _selectDate(context);
+                  onTap: () async {
+                    final int? pickedDay = await selectDay(context);
+                    if (pickedDay != null && pickedDay != _selectedDay) {
+                      setState(() {
+                        _selectedDay = pickedDay;
+                      });
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -111,9 +108,9 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _selectedDate == null
-                              ? 'Select Date'
-                              : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                          _selectedDay == null
+                              ? 'Select Day'
+                              : 'Day $_selectedDay',
                           style: const TextStyle(color: Colors.white),
                         ),
                         const Icon(Icons.calendar_today, color: Colors.white),
@@ -123,28 +120,12 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
                 ),
                 const Spacer(),
                 const Spacer(),
-                // Checkbox with confirmation
-                // CheckboxListTile(
-                //   title: const Text(
-                //     'Agree to terms',
-                //     style: TextStyle(color: Colors.white),
-                //   ),
-                //   value: _isChecked,
-                //   onChanged: (bool? newValue) {
-                //     setState(() {
-                //       _isChecked = newValue ?? false;
-                //     });
-                //   },
-                //   controlAffinity: ListTileControlAffinity.leading,
-                //   activeColor: Colors.white,
-                //   checkColor: Colors.black,
-                // ),
                 const SizedBox(height: 30),
                 // Check button
                 IconButton(
                   icon: const Icon(Icons.check_circle,
                       color: Colors.white, size: 50),
-                  onPressed: () => print('Budget ni bebi ay galing sa dadi'),
+                  onPressed: () => _goToHomePage(),
                 ),
                 const SizedBox(height: 20),
               ],

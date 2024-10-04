@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart'; // Updated import
 import 'package:sugar/components/background.dart';
-import 'package:sugar/monthly_budget_page.dart';
+import 'package:sugar/components/notifier.dart';
+import 'package:sugar/pages/monthly_budget_page.dart';
 
 class InvitePage extends StatelessWidget {
   final String role;
 
   const InvitePage({super.key, required this.role});
+
+  Future<String> generateLink() async {
+    // Simulate a network call or some async operation
+    await Future.delayed(const Duration(seconds: 1));
+    return "ABCD"; // Replace with actual link generation logic
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,16 +54,25 @@ class InvitePage extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.link, color: Colors.white, size: 50),
-                    onPressed: () {
+                    onPressed: () async {
                       // Handle link sharing Copy to clipboard
+                      String link = await generateLink();
+                      Clipboard.setData(ClipboardData(text: link));
+                      Notifier.show(
+                        context,
+                        "Link copied to clipboard",
+                        3,
+                      );
                     },
                   ),
                   const SizedBox(width: 40),
                   IconButton(
                     icon:
                         const Icon(Icons.share, color: Colors.white, size: 50),
-                    onPressed: () {
+                    onPressed: () async {
                       // Handle sharing via other apps
+                      String link = await generateLink();
+                      Share.share(link); // Using share_plus for sharing
                     },
                   ),
                 ],

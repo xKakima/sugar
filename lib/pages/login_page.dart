@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sugar/components/background.dart';
-import 'package:sugar/selection_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sugar/components/background.dart';
+import 'package:sugar/components/notifier.dart';
+import 'package:sugar/pages/selection_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
 
-Future<void> _nativeGoogleSignIn(callback) async {
+Future<void> _nativeGoogleSignIn(
+    BuildContext context, VoidCallback callback) async {
   const webClientId =
       "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com";
 
@@ -16,30 +18,56 @@ Future<void> _nativeGoogleSignIn(callback) async {
         "511559276850-a64rvj07blo1fh3p5r956nm75jrcte29.apps.googleusercontent.com",
     serverClientId: webClientId,
   );
-  final googleUser = await googleSignIn.signIn();
-  final googleAuth = await googleUser!.authentication;
-  final accessToken = googleAuth.accessToken;
-  final idToken = googleAuth.idToken;
 
-  if (accessToken == null) {
-    throw 'No Access Token found.';
+  try {
+    final googleUser = await googleSignIn.signIn();
+    if (googleUser == null) {
+      throw 'Google sign-in aborted.';
+    }
+
+    final googleAuth = await googleUser.authentication;
+    final accessToken = googleAuth.accessToken;
+    final idToken = googleAuth.idToken;
+
+    if (accessToken == null || idToken == null) {
+      throw 'No Access Token or ID Token found.';
+    }
+
+    // Sign in to Supabase with Google
+    await supabase.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+
+    // Save login status in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+
+    // Show a SnackBar with the user's email
+    Notifier.show(context, 'Successfully signed in as ${googleUser.email}', 3);
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('Successfully signed in as ${googleUser.email}'),
+    //     duration: const Duration(seconds: 3),
+    //   ),
+    // );
+
+    print("Signed in with Google as ${googleUser.email}");
+
+    // Call the callback function (e.g., navigate to the selection page)
+    callback();
+  } catch (error) {
+    // Handle any errors during sign-in
+    print("Sign-in failed: $error");
+    Notifier.show(context, 'Sign-in failed: $error', 3);
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('Sign-in failed: $error'),
+    //     duration: const Duration(seconds: 3),
+    //   ),
+    // );
   }
-  if (idToken == null) {
-    throw 'No ID Token found.';
-  }
-
-  await supabase.auth.signInWithIdToken(
-    provider: OAuthProvider.google,
-    idToken: idToken,
-    accessToken: accessToken,
-  );
-
-  // Save login status in SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isLoggedIn', true);
-
-  print("Signed in with Google");
-  callback();
 }
 
 class LoginPage extends StatefulWidget {
@@ -76,7 +104,8 @@ class _LoginPageState extends State<LoginPage> {
               double buttonHeight = constraints.maxHeight * 0.1;
 
               return OutlinedButton(
-                onPressed: () => _nativeGoogleSignIn(_goToSelectionPage),
+                onPressed: () =>
+                    _nativeGoogleSignIn(context, _goToSelectionPage),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide.none, // Remove border for a cleaner look
                 ),
