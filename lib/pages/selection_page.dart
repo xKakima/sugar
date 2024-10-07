@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/components/background.dart';
+import 'package:sugar/components/buttons/rectangle_button.dart';
 import 'package:sugar/pages/invite_page.dart';
 
 class SelectionPage extends StatefulWidget {
@@ -45,56 +46,26 @@ class _SelectionPageState extends State<SelectionPage> {
               ),
               const Spacer(),
               const Text(
-                'who are\nyou',
+                'who\nare\nyou',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 40,
+                  fontSize: 30,
                   fontWeight: FontWeight.w600,
                 ),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.right,
               ),
               const SizedBox(height: 40),
-              OutlinedButton(
-                onPressed: () {
-                  _onRoleSelected('sugar_daddy');
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white, width: 2),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'sugar daddy',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              RectangleButton(
+                  onPressed: () {
+                    _onRoleSelected('sugar_daddy');
+                  },
+                  text: 'sugar daddy'),
               const SizedBox(height: 20),
-              OutlinedButton(
-                onPressed: () {
-                  _onRoleSelected('sugar_baby');
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white, width: 2),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'sugar baby',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              RectangleButton(
+                  onPressed: () {
+                    _onRoleSelected('sugar_baby');
+                  },
+                  text: 'sugar baby'),
               const Spacer(),
             ],
           ),

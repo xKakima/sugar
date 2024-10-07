@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/components/background.dart';
-import 'package:sugar/components/notifier.dart';
-import 'package:sugar/pages/selection_page.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sugar/pages/selection_page.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -44,47 +43,25 @@ Future<void> _nativeGoogleSignIn(
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
 
-    // Show a SnackBar with the user's email
-    Notifier.show(context, 'Successfully signed in as ${googleUser.email}', 3);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text('Successfully signed in as ${googleUser.email}'),
-    //     duration: const Duration(seconds: 3),
-    //   ),
-    // );
-
-    print("Signed in with Google as ${googleUser.email}");
-
     // Call the callback function (e.g., navigate to the selection page)
     callback();
   } catch (error) {
-    // Handle any errors during sign-in
     print("Sign-in failed: $error");
-    Notifier.show(context, 'Sign-in failed: $error', 3);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text('Sign-in failed: $error'),
-    //     duration: const Duration(seconds: 3),
-    //   ),
-    // );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sign-in failed: $error'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  @override
-  // ignore: library_private_types_in_public_api
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  // Future<void> _handleSignIn(BuildContext context) async {
-  //   await Supabase.instance.client.auth.signInWithOAuth(OAuthProvider.google);
-  // }
-
-  void _goToSelectionPage() {
-    print(" Go to selection page");
+  void _goToSelectionPage(BuildContext context) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => const SelectionPage(),
@@ -96,28 +73,43 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Background(
-        child: Center(
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              // Set the size of the button to 20% of the parent width, and 10% height
-              double buttonWidth = constraints.maxWidth * 0.2;
-              double buttonHeight = constraints.maxHeight * 0.1;
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            double buttonSize = constraints.maxWidth * 0.15;
+            double textTopPadding = constraints.maxHeight * 0.25;
+            double buttonTopPadding = constraints.maxHeight * 0.15;
 
-              return OutlinedButton(
-                onPressed: () =>
-                    _nativeGoogleSignIn(context, _goToSelectionPage),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide.none, // Remove border for a cleaner look
-                ),
-                child: Image.asset(
-                  'assets/images/google_icon.png',
-                  width: buttonWidth,
-                  height: buttonHeight,
-                  fit: BoxFit.contain,
-                ),
-              );
-            },
-          ),
+            return Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                      height: textTopPadding), // Space above the login text
+                  const Text(
+                    'login.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: buttonTopPadding), // Space above the button
+                  GestureDetector(
+                    onTap: () => _nativeGoogleSignIn(
+                        context, () => _goToSelectionPage(context)),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Image.asset(
+                        'assets/images/google_icon.png',
+                        width: buttonSize,
+                        height: buttonSize,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

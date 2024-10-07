@@ -30,7 +30,12 @@ class MyApp extends StatelessWidget {
       home: const SplashScreen(),
       theme: ThemeData(
         brightness: Brightness.dark,
-        textTheme: const TextTheme(bodyLarge: TextStyle(fontFamily: 'Figtree')),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontFamily: 'Figtree'),
+          bodyMedium: TextStyle(fontFamily: 'Figtree'),
+          bodySmall: TextStyle(fontFamily: 'Figtree'),
+          titleLarge: TextStyle(fontFamily: 'Figtree'),
+        ),
       ),
     );
   }

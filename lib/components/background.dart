@@ -7,16 +7,11 @@ class Background extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/background.png', // Ensure the asset path is correct
-            fit: BoxFit.cover,
-          ),
-        ),
-        child, // The content inside the background
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F), // Background color based on HSB values
+      ),
+      child: child, // The content inside the background
     );
   }
 }
