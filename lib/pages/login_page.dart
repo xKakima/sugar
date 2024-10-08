@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/components/background.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sugar/database/user_data.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/pages/selection_page.dart';
@@ -39,12 +40,19 @@ Future<void> _nativeGoogleSignIn(
       accessToken: accessToken,
     );
 
-    // Save login status in SharedPreferences
+    final fetchResponse = await fetchUserData(supabase.auth.currentUser!.id);
+    if (fetchResponse.isEmpty) {
+      final insertResponse =
+          await insertUserData(supabase.auth.currentUser!.id);
+      if (!insertResponse['success']) {
+        throw Exception(insertResponse['message']);
+      }
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
-
-    // Call the callback function (e.g., navigate to the selection page)
     callback();
+    // Save login status in SharedPreferences
+    // callback();
   } catch (error) {
     print("Sign-in failed: $error");
     if (context.mounted) {

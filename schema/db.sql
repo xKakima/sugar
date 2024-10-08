@@ -8,33 +8,12 @@ USING ( auth.uid() = auth.users.id );
 CREATE SCHEMA sugar;
 
 -- Create Functions
-CREATE OR REPLACE FUNCTION create_crud_policy_with_reference(
-    table_name text, 
-    reference_table_name text, 
-    reference_column_name text
-) RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION generate_unique_code()
+RETURNS TRIGGER AS $$
 BEGIN
-    EXECUTE format('
-        CREATE POLICY "Users can insert their own data on %1$s" ON %1$s
-        FOR INSERT
-        TO authenticated
-        WITH CHECK ((SELECT user_id FROM %2$s WHERE %3$s = %1$s.%3$s) = auth.uid());
-
-        CREATE POLICY "Users can select their own data on %1$s" ON %1$s
-        FOR SELECT
-        TO authenticated
-        USING ((SELECT user_id FROM %2$s WHERE %3$s = %1$s.%3$s) = auth.uid());
-
-        CREATE POLICY "Users can update their own data on %1$s" ON %1$s
-        FOR UPDATE
-        TO authenticated
-        USING ((SELECT user_id FROM %2$s WHERE %3$s = %3$s) = auth.uid());
-
-        CREATE POLICY "Users can delete their own data on %1$s" ON %1$s
-        FOR DELETE
-        TO authenticated
-        USING ((SELECT user_id FROM %2$s WHERE %3$s = %3$s) = auth.uid());
-    ', table_name, reference_table_name, reference_column_name);
+  -- Generate a random 6-character alphanumeric code
+  NEW.unique_code := substring(md5(random()::text) from 1 for 6);
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -50,13 +29,13 @@ END $$;
 CREATE TABLE sugar.user_data (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
+    partner_id UUID REFERENCES auth.users(id),
     user_type sugar.user_type NOT NULL DEFAULT 'BABY',
     unique_code VARCHAR(255),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE sugar.user_data ENABLE ROW LEVEL SECURITY;
-SELECT create_crud_policy_with_reference('sugar.user_data', 'auth.users', 'user_id');
 
 CREATE TABLE sugar.monthly_budget (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -67,7 +46,6 @@ CREATE TABLE sugar.monthly_budget (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
-SELECT create_crud_policy_with_reference('sugar.monthly_budget', 'auth.users', 'user_id');
 
 CREATE TABLE sugar.balance (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -77,7 +55,6 @@ CREATE TABLE sugar.balance (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE sugar.balance ENABLE ROW LEVEL SECURITY;
-SELECT create_crud_policy_with_reference('sugar.balance', 'auth.users', 'user_id');
 
 CREATE TABLE sugar.account (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -88,7 +65,6 @@ CREATE TABLE sugar.account (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE sugar.account ENABLE ROW LEVEL SECURITY;
-SELECT create_crud_policy_with_reference('sugar.account', 'auth.users', 'user_id');
 
 -- Create Triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -119,4 +95,51 @@ BEGIN
     END LOOP;
 END $$;
 
--- TODO: create a table for transactions and recurring transactions
+CREATE TRIGGER set_unique_code
+BEFORE INSERT ON sugar.user_data
+FOR EACH ROW
+EXECUTE FUNCTION generate_unique_code();
+
+
+
+DO $$
+DECLARE
+    rec RECORD;
+    schema_name CONSTANT TEXT := 'sugar';
+BEGIN
+    FOR rec IN
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = schema_name
+          AND table_type = 'BASE TABLE'
+    LOOP
+        -- Check if 'user_id' column exists in the table
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = schema_name
+              AND table_name = rec.table_name
+              AND column_name = 'user_id'
+        ) THEN
+            -- Enable RLS on the table
+            EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY;', schema_name, rec.table_name);
+
+            -- Create the policy
+            EXECUTE format(
+                'CREATE POLICY "Users can manage their own data on %I.%I" ON %I.%I
+                 FOR ALL
+                 TO authenticated
+                 USING (auth.uid() = user_id)
+                 WITH CHECK (auth.uid() = user_id);',
+                schema_name, rec.table_name, schema_name, rec.table_name
+            );
+        END IF;
+    END LOOP;
+END $$;
+
+
+GRANT USAGE ON SCHEMA sugar TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sugar TO authenticated;
+
+
+-- TODO: create a table for transactions

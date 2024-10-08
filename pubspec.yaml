@@ -25,7 +25,6 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
-    - assets/.env
   fonts:
     - family: Figtree
       fonts:

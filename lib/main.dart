@@ -1,22 +1,23 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sugar/pages/splash_screen_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Required to use async in main
+  WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: "assets/.env");
+  // await dotenv.load(fileName: "assets/.env");
 
-  print(dotenv.env['SUPABASE_URL']);
+  // print(dotenv.env['SUPABASE_URL']);
 
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_KEY']!,
+    url: "https://hcttbvnryoqdwfvmbbnn.supabase.co",
+    anonKey:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjdHRidm5yeW9xZHdmdm1iYm5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1MjI1MTksImV4cCI6MjA0MzA5ODUxOX0.8UD_O56w8GCGAaTSOALVXaK6d9V13eC5AR467qvGCZw",
     postgrestOptions: const PostgrestClientOptions(schema: 'sugar'),
-  ).then((value) => print("done supabase connection"));
+  ).then((value) => print("Supabase initialized: $value"));
 
   runApp(MyApp());
 }
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
       home: const SplashScreen(),
       theme: ThemeData(
         brightness: Brightness.dark,
+        fontFamily: 'Figtree',
         textTheme: const TextTheme(
           bodyLarge: TextStyle(fontFamily: 'Figtree'),
           bodyMedium: TextStyle(fontFamily: 'Figtree'),
