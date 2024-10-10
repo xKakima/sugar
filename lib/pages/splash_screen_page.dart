@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sugar/components/background.dart';
+import 'package:sugar/widgets/background.dart';
+import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/database/budget.dart';
+import 'package:sugar/database/user_data.dart';
+import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -14,6 +20,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final dataStore = Get.find<DataStoreController>();
   double _progress = 0.0;
   late Timer _timer;
   late int _loadDuration;
@@ -24,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Randomize the load time between 3-10 seconds
-    _loadDuration = Random().nextInt(8) + 3;
+    _loadDuration = Random().nextInt(2) + 3;
     print('Load duration: $_loadDuration seconds');
 
     // Start loading progress
@@ -33,9 +40,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _startLoading() async {
     // Check the login status
+    //TODO
     final prefs = await SharedPreferences.getInstance();
-    //TODO REMOVE
-    await prefs.setBool('isLoggedIn', false);
+    prefs.setBool('isLoggedIn', false);
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
     // 50 ms interval between each tick
@@ -60,13 +67,13 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  void _goToLoginPage(isLoggedIn) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) =>
-            isLoggedIn ? const Placeholder() : const LoginPage(),
-      ),
-    );
+  Future<void> _goToLoginPage(isLoggedIn) async {
+    final balance = await fetchBudget();
+    final userData = await fetchUserData();
+    dataStore.setData("sweetFundsBalance", balance);
+    dataStore.setData("userType", userData[0]['user_type'].toString());
+
+    Get.to(isLoggedIn ? const HomePage() : const LoginPage());
   }
 
   @override

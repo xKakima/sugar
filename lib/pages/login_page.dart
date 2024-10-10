@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:sugar/components/background.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:sugar/widgets/background.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sugar/pages/selection_page.dart';
+import 'package:sugar/pages/role_selection_page.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -40,7 +43,7 @@ Future<void> _nativeGoogleSignIn(
       accessToken: accessToken,
     );
 
-    final fetchResponse = await fetchUserData(supabase.auth.currentUser!.id);
+    final fetchResponse = await fetchUserData();
     if (fetchResponse.isEmpty) {
       final insertResponse =
           await insertUserData(supabase.auth.currentUser!.id);
@@ -48,6 +51,12 @@ Future<void> _nativeGoogleSignIn(
         throw Exception(insertResponse['message']);
       }
     }
+
+    Notifier.show(
+      "Welcome, ${supabase.auth.currentUser!.userMetadata?["name"]}!",
+      3,
+    );
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
     callback();
@@ -56,12 +65,11 @@ Future<void> _nativeGoogleSignIn(
   } catch (error) {
     print("Sign-in failed: $error");
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Sign-in failed: $error'),
-          duration: const Duration(seconds: 3),
-        ),
+      Notifier.show(
+        "Sign-in failed: $error",
+        3,
       );
+      // );
     }
   }
 }
@@ -72,7 +80,7 @@ class LoginPage extends StatelessWidget {
   void _goToSelectionPage(BuildContext context) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const SelectionPage(),
+        builder: (context) => const RoleSelectionPage(),
       ),
     );
   }
@@ -103,7 +111,7 @@ class LoginPage extends StatelessWidget {
                   SizedBox(height: buttonTopPadding), // Space above the button
                   GestureDetector(
                     onTap: () => _nativeGoogleSignIn(
-                        context, () => _goToSelectionPage(context)),
+                        context, () => Get.to(RoleSelectionPage())),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(

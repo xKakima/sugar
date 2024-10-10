@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/buttons/rectangle_button.dart';
+import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/invite_page.dart';
+import 'package:sugar/widgets/notifier.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -14,19 +18,19 @@ class RoleSelectionPage extends StatefulWidget {
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
   String selectedRole = '';
 
+  final dataStore = Get.find<DataStoreController>();
+
   Future<void> _onRoleSelected(String role) async {
     setState(() {
       selectedRole = role;
     });
-    String userType = role == 'sugar_daddy' ? "DADDY" : "BABY";
-    final upsertResponse = await upsertUserData({"user_type": userType});
+    final upsertResponse = await upsertUserData({"userType": selectedRole});
+
+    dataStore.setData("userType", role);
 
     print("upsert response ${upsertResponse}");
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => InvitePage(role: role)),
-    );
+    Get.to(InvitePage(role: role));
   }
 
   @override
@@ -83,14 +87,14 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
               // Buttons for sugar daddy and sugar baby
               RectangleButton(
                 onPressed: () {
-                  _onRoleSelected('sugar_daddy');
+                  _onRoleSelected('DADDY');
                 },
                 text: 'sugar daddy',
               ),
               const SizedBox(height: 20),
               RectangleButton(
                 onPressed: () {
-                  _onRoleSelected('sugar_baby');
+                  _onRoleSelected('BABY');
                 },
                 text: 'sugar baby',
               ),

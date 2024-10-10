@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:sugar/components/background.dart';
-import 'package:sugar/components/balance_box.dart';
-import 'package:sugar/components/plus_button.dart';
-import 'package:sugar/components/profile_icon.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:sugar/widgets/background.dart';
+import 'package:sugar/widgets/balance_box.dart';
+import 'package:sugar/widgets/plus_button.dart';
+import 'package:sugar/widgets/profile_icon.dart';
+import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/database/balance.dart';
+import 'package:sugar/database/budget.dart';
 import 'package:sugar/pages/account_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,33 +20,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  void _goToAccountPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) =>
-            const AccountPage(), // Replace with your AccountsPage
-      ),
-    );
-  }
+  final dataStore = Get.find<DataStoreController>();
+  late String sweetFundsBalance = dataStore.getData("sweetFundsBalance");
+  late String welcomeText =
+      dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
+  // final String welcomeText = "MEH";
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   sweetFundsBalance
+  //   welcomeText =
+  //       d
+  // }
 
   // Add dynamic loading from database here
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> balanceBoxList = [
-      BalanceBox(
-        title: 'sugar baby balance',
-        amount: '800,000',
-        onTap: _goToAccountPage,
-      ),
-      BalanceBox(
-        title: 'sugar daddy balance',
-        amount: '600,000',
-        onTap: () => _goToAccountPage,
-        hasNoLink: true,
-      ),
-    ];
-
     return Scaffold(
       body: Stack(
         children: [
@@ -59,8 +56,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Hi, Baby!',
+                  Text(
+                    welcomeText,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 36,
@@ -70,16 +67,25 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 16),
                   BalanceBox(
                     title: 'sweet funds REMAINING',
-                    amount: '10,000',
+                    amount: sweetFundsBalance,
                     onTap: () => {print("OPEN ACCOUNT")},
                   ),
                   const Divider(color: Colors.white54),
                   // Make the account boxes scrollable
                   Expanded(
-                    child: ListView(
+                    child: Column(
                       children: [
-                        ...balanceBoxList,
-                        // You can add more AccountBoxes here or generate them dynamically
+                        BalanceBox(
+                          title: 'sugar baby balance',
+                          amount: '0',
+                          onTap: () => Get.to(const AccountPage()),
+                        ),
+                        BalanceBox(
+                          title: 'sugar daddy balance',
+                          amount: '600,000',
+                          onTap: () => () => Get.to(const AccountPage()),
+                          hasNoLink: true,
+                        ),
                       ],
                     ),
                   ),

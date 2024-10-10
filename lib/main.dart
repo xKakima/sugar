@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:sugar/controller/data_store_controller.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sugar/pages/splash_screen_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +21,8 @@ Future<void> main() async {
     postgrestOptions: const PostgrestClientOptions(schema: 'sugar'),
   ).then((value) => print("Supabase initialized: $value"));
 
+  Get.put(DataStoreController());
+
   runApp(MyApp());
 }
 
@@ -27,7 +31,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       home: const SplashScreen(),
       theme: ThemeData(
         brightness: Brightness.dark,

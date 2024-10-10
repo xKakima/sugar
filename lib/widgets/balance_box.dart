@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:sugar/controller/data_store_controller.dart';
 
 class BalanceBox extends StatefulWidget {
   final String title;
@@ -20,6 +23,10 @@ class BalanceBox extends StatefulWidget {
 }
 
 class _BalanceBoxState extends State<BalanceBox> {
+  final dataStore = Get.find<DataStoreController>();
+  late String noLinkedAccountText = dataStore.getData("userType") == "DADDY"
+      ? "your sugar baby will appear here"
+      : "your sugar daddy will appear here";
   bool _isHidden = false; // Controls whether the text is blurred or not
 
   void _toggleVisibility() {
@@ -77,7 +84,7 @@ class _BalanceBoxState extends State<BalanceBox> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "your sugar X will appear here",
+            noLinkedAccountText,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,

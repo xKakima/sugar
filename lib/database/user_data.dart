@@ -2,8 +2,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 final SupabaseClient supabase = Supabase.instance.client;
 
-Future<PostgrestList> fetchUserData(String userId) async {
-  return await supabase.from('user_data').select('*').eq('user_id', userId);
+Future<PostgrestList> fetchUserData() async {
+  return await supabase
+      .from('user_data')
+      .select('*')
+      .eq('user_id', supabase.auth.currentUser!.id);
 }
 
 Future<dynamic> fetchSpecificUserData(dynamic column) async {
@@ -18,7 +21,7 @@ Future<Map<String, dynamic>> upsertUserData(
   try {
     // add user_id to userData
     userData['user_id'] = supabase.auth.currentUser!.id;
-    final response = await supabase.from('user_data').upsert(userData);
+    await supabase.from('user_data').upsert(userData);
 
     print('Upsert successful');
     return {"success": true, "message": 'Upsert successful'};

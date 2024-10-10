@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:sugar/components/background.dart';
-import 'package:sugar/components/buttons/rectangle_button.dart';
-import 'package:sugar/components/notifier.dart';
+import 'package:sugar/widgets/background.dart';
+import 'package:sugar/widgets/buttons/rectangle_button.dart';
+import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/monthly_budget_page.dart';
 
@@ -59,7 +59,8 @@ class _InvitePageState extends State<InvitePage> {
               ),
               const Spacer(),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.values[1],
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Image for sugar daddy or sugar baby
                   Image.asset(
@@ -67,55 +68,44 @@ class _InvitePageState extends State<InvitePage> {
                     width: 280,
                     height: 280,
                   ),
-                  // Text inviting sugar daddy or sugar baby
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          inviteText,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ])
+                  // const SizedBox(
+                  //     width: 5), // Add spacing between the image and text
+                  // const Spacer(),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      inviteText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 40),
-              // Row with icons for copying link and sharing
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // IconButton(
-                  //   icon: const Icon(Icons.link, color: Colors.white, size: 50),
-                  //   onPressed: () async {
-                  //     Clipboard.setData(ClipboardData(text: uniqueCode));
-                  //     Notifier.show(
-                  //       context,
-                  //       "Link copied to clipboard",
-                  //       3,
-                  //     );
-                  //   },
-                  // ),
                   RectangleButton(
-                      image: "assets/images/link_button.png",
-                      isFullSize: false,
-                      onPressed: () async {
-                        Clipboard.setData(ClipboardData(text: uniqueCode));
-                        Notifier.show(
-                          context,
-                          "Link copied to clipboard",
-                          3,
-                        );
-                      }),
+                    image: "assets/images/link_button.png",
+                    isFullSize: false,
+                    onPressed: () async {
+                      Clipboard.setData(ClipboardData(text: uniqueCode));
+                      Notifier.show(
+                        "Link copied to clipboard",
+                        3,
+                      );
+                    },
+                  ),
                   const SizedBox(width: 40),
                   RectangleButton(
                     image: "assets/images/share_button.png",
                     isFullSize: false,
                     onPressed: () async {
-                      Share.share(uniqueCode); // Using share_plus for sharing
+                      Share.share(uniqueCode);
                     },
                   ),
                 ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sugar/components/background.dart';
-import 'package:sugar/components/profile_icon.dart';
-import 'package:sugar/components/account_box.dart';
+import 'package:sugar/widgets/background.dart';
+import 'package:sugar/widgets/profile_icon.dart';
+import 'package:sugar/widgets/account_box.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});

@@ -40,6 +40,7 @@ ALTER TABLE sugar.user_data ENABLE ROW LEVEL SECURITY;
 CREATE TABLE sugar.monthly_budget (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
+    partner_id UUID REFERENCES auth.users(id),
     budget integer NOT NULL DEFAULT 10000,
     reset_date TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -50,6 +51,7 @@ ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
 CREATE TABLE sugar.balance (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
+    partner_id UUID REFERENCES auth.users(id),
     balance INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
