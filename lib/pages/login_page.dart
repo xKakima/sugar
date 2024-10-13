@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:sugar/pages/partner_code_page.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sugar/widgets/notifier.dart';
@@ -77,14 +77,6 @@ Future<void> _nativeGoogleSignIn(
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  void _goToSelectionPage(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const RoleSelectionPage(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +103,7 @@ class LoginPage extends StatelessWidget {
                   SizedBox(height: buttonTopPadding), // Space above the button
                   GestureDetector(
                     onTap: () => _nativeGoogleSignIn(
-                        context, () => Get.to(RoleSelectionPage())),
+                        context, () => Get.to(PartnerCodePage())),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(

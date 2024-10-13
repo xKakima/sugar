@@ -47,13 +47,20 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 40), // Adds some space for top padding
-                  Text(
-                    'Mon, 22 September 2024',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 14,
-                    ),
+                  // const SizedBox(height: 40), // Adds some space for top padding
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Mon, 22 September 2024',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                      // Use the reusable ProfileIcon
+                      ProfileIcon(),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -66,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 16),
                   BalanceBox(
-                    title: 'sweet funds REMAINING',
+                    title: 'sugar funds',
                     amount: sweetFundsBalance,
                     onTap: () => {print("OPEN ACCOUNT")},
                   ),
@@ -96,8 +103,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          // Use the reusable ProfileIcon
-          ProfileIcon(),
         ],
       ),
     );

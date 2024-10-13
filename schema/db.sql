@@ -6,13 +6,25 @@ FOR SELECT
 USING ( auth.uid() = auth.users.id );
 
 CREATE SCHEMA sugar;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+SET timezone = 'Asia/Manila';
 
 -- Create Functions
-CREATE OR REPLACE FUNCTION generate_unique_code()
+CREATE OR REPLACE FUNCTION sugar.generate_unique_code()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Generate a random 6-character alphanumeric code
   NEW.unique_code := substring(md5(random()::text) from 1 for 6);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sugar.set_monthly_budget_balance()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Generate a random 6-character alphanumeric code
+  NEW.balance := NEW.budget;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -42,21 +54,12 @@ CREATE TABLE sugar.monthly_budget (
     user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
     partner_id UUID REFERENCES auth.users(id),
     budget integer NOT NULL DEFAULT 10000,
-    reset_date TIMESTAMPTZ,
+    balance integer,
+    reset_day INTEGER CHECK (reset_day BETWEEN 1 AND 31),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
-
-CREATE TABLE sugar.balance (
-    id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
-    user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
-    partner_id UUID REFERENCES auth.users(id),
-    balance INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-ALTER TABLE sugar.balance ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE sugar.account (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -69,7 +72,7 @@ CREATE TABLE sugar.account (
 ALTER TABLE sugar.account ENABLE ROW LEVEL SECURITY;
 
 -- Create Triggers
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+CREATE OR REPLACE FUNCTION sugar.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
@@ -91,7 +94,7 @@ BEGIN
             'CREATE TRIGGER update_updated_at_%I 
             BEFORE UPDATE ON %I.%I 
             FOR EACH ROW 
-            EXECUTE FUNCTION update_updated_at_column();',
+            EXECUTE FUNCTION sugar.update_updated_at_column();',
             rec.tablename, schema_name, rec.tablename
         );
     END LOOP;
@@ -100,8 +103,12 @@ END $$;
 CREATE TRIGGER set_unique_code
 BEFORE INSERT ON sugar.user_data
 FOR EACH ROW
-EXECUTE FUNCTION generate_unique_code();
+EXECUTE FUNCTION sugar.generate_unique_code();
 
+CREATE TRIGGER set_balance
+BEFORE INSERT ON sugar.monthly_budget
+FOR EACH ROW
+EXECUTE FUNCTION sugar.set_monthly_budget_balance();
 
 
 DO $$
@@ -139,6 +146,30 @@ BEGIN
     END LOOP;
 END $$;
 
+CREATE OR REPLACE FUNCTION sugar.check_reset_day() 
+RETURNS VOID AS $$
+DECLARE
+    rec sugar.monthly_budget%ROWTYPE; -- Declare rec as a row type of the table
+BEGIN
+    -- Loop through all monthly budgets
+    FOR rec IN SELECT * FROM sugar.monthly_budget LOOP
+        IF EXTRACT(DAY FROM CURRENT_DATE) = rec.reset_day THEN
+            -- Update the balance to match the budget
+            UPDATE sugar.monthly_budget
+            SET balance = rec.budget, updated_at = NOW()
+            WHERE sugar.monthly_budget.id = rec.id;
+
+            -- Log the update
+            RAISE NOTICE 'Updated row: id=%, user_id=%, budget=%, balance=% at %',
+                rec.id, rec.user_id, rec.budget, rec.budget, NOW();
+        ELSE
+            -- Log skipped rows
+            RAISE NOTICE 'Skipped row: id=%, user_id=%, reset_day=% (Today: %)',
+                rec.id, rec.user_id, rec.reset_day, EXTRACT(DAY FROM CURRENT_DATE);
+        END IF;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
 
 GRANT USAGE ON SCHEMA sugar TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sugar TO authenticated;

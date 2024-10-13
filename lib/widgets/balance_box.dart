@@ -47,14 +47,30 @@ class _BalanceBoxState extends State<BalanceBox> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+              Row(
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                  ),
+                  // const Spacer(),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(
+                        _isHidden ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.white,
+                      ),
+                      onPressed: _toggleVisibility,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
+              // const SizedBox(height: 4),
               // Show the blurred or visible amount
               Text(
                 _isHidden ? '•••••••' : 'PHP ${widget.amount}',
@@ -65,13 +81,6 @@ class _BalanceBoxState extends State<BalanceBox> {
                 ),
               ),
             ],
-          ),
-          IconButton(
-            icon: Icon(
-              _isHidden ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white,
-            ),
-            onPressed: _toggleVisibility,
           ),
         ],
       ),

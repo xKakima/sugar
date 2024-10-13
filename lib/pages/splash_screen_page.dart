@@ -39,9 +39,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startLoading() async {
+    final prefs = await SharedPreferences.getInstance();
     // Check the login status
     //TODO
-    final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isLoggedIn', false);
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
@@ -60,20 +60,24 @@ class _SplashScreenState extends State<SplashScreen> {
         if (_progress >= 1.0) {
           _progress = 1.0;
           _timer.cancel();
-          _goToLoginPage(
+          _redirect(
               isLoggedIn); // Navigate to the login page when loading completes
         }
       });
     });
   }
 
-  Future<void> _goToLoginPage(isLoggedIn) async {
-    final balance = await fetchBudget();
-    final userData = await fetchUserData();
-    dataStore.setData("sweetFundsBalance", balance);
-    dataStore.setData("userType", userData[0]['user_type'].toString());
+  Future<void> _redirect(isLoggedIn) async {
+    if (isLoggedIn) {
+      final balance = await fetchBudget();
+      final userData = await fetchUserData();
+      dataStore.setData("sweetFundsBalance", balance);
+      dataStore.setData("userType", userData[0]['user_type'].toString());
 
-    Get.to(isLoggedIn ? const HomePage() : const LoginPage());
+      Get.to(const HomePage());
+    }
+
+    Get.to(LoginPage());
   }
 
   @override

@@ -9,6 +9,11 @@ double getWidthPercentage(BuildContext context, double percentage) {
   return screenWidth * (percentage / 100);
 }
 
+double getHeightPercentage(BuildContext context, double percentage) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  return screenHeight * (percentage / 100);
+}
+
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   final NumberFormat numberFormat = NumberFormat.decimalPattern();
 
@@ -50,4 +55,24 @@ String formatWithCommas(String value) {
   String formattedValue = formatter.format(int.parse(cleanValue));
 
   return formattedValue;
+}
+
+int formatInteger(String value) {
+  return int.parse(value.replaceAll(',', ''));
+}
+
+String getDaySuffix(int day) {
+  if (day >= 11 && day <= 13) {
+    return 'th';
+  }
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
 }

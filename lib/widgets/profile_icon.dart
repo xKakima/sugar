@@ -14,10 +14,9 @@ class ProfileIcon extends StatelessWidget {
     return Align(
       alignment: Alignment.topRight,
       child: Padding(
-        padding: const EdgeInsets.only(
-            top: 40, right: 16), // Adjust padding as needed
+        padding: const EdgeInsets.only(right: 16), // Adjust padding as needed
         child: IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.white, size: 32),
+          icon: const Icon(Icons.account_circle, color: Colors.white, size: 50),
           onPressed: _navigateToProfile,
         ),
       ),
