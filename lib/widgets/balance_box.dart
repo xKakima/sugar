@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 
 class BalanceBox extends StatefulWidget {
   final String title;
   final String amount;
   final VoidCallback onTap;
+  final Color color;
   final bool hasNoLink;
 
   const BalanceBox({
@@ -14,6 +14,7 @@ class BalanceBox extends StatefulWidget {
     required this.title,
     required this.amount,
     required this.onTap,
+    required this.color,
     this.hasNoLink = false,
   });
 
@@ -27,7 +28,8 @@ class _BalanceBoxState extends State<BalanceBox> {
   late String noLinkedAccountText = dataStore.getData("userType") == "DADDY"
       ? "your sugar baby will appear here"
       : "your sugar daddy will appear here";
-  bool _isHidden = false; // Controls whether the text is blurred or not
+
+  bool _isHidden = false;
 
   void _toggleVisibility() {
     setState(() {
@@ -37,84 +39,59 @@ class _BalanceBoxState extends State<BalanceBox> {
 
   @override
   Widget build(BuildContext context) {
-    const double boxHeight = 80.0;
-
-    var hasLinkChildren = SizedBox(
-      height: boxHeight, // Set a consistent height
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
-                  ),
-                  // const Spacer(),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(
-                        _isHidden ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.white,
-                      ),
-                      onPressed: _toggleVisibility,
-                    ),
-                  ),
-                ],
-              ),
-              // const SizedBox(height: 4),
-              // Show the blurred or visible amount
-              Text(
-                _isHidden ? '•••••••' : 'PHP ${widget.amount}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-
-    var hasNoLinkChildren = SizedBox(
-      height: boxHeight, // Set the same consistent height
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            noLinkedAccountText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
     return GestureDetector(
-      onTap: widget.onTap, // Makes the entire box clickable
+      onTap: widget.onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: widget.color,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children:
-                widget.hasNoLink ? [hasNoLinkChildren] : [hasLinkChildren]),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Title Text
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14, // Smaller font size
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+
+                // Visibility Toggle Icon
+                IconButton(
+                  icon: Icon(
+                    _isHidden ? Icons.visibility_off : Icons.visibility,
+                    size: 18, // Smaller icon
+                    color: Colors.white,
+                  ),
+                  onPressed: _toggleVisibility,
+                ),
+              ],
+            ),
+            // Amount Text
+            Row(
+              children: [
+                const Spacer(),
+                Text(
+                  _isHidden ? '••••••' : 'PHP ${widget.amount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24, // Smaller font size for amount
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

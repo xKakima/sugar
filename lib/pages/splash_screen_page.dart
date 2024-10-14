@@ -44,6 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
     //TODO
     prefs.setBool('isLoggedIn', false);
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    print('Is logged in: $isLoggedIn');
 
     // 50 ms interval between each tick
     const duration = Duration(milliseconds: 50);
@@ -73,11 +74,12 @@ class _SplashScreenState extends State<SplashScreen> {
       final userData = await fetchUserData();
       dataStore.setData("sweetFundsBalance", balance);
       dataStore.setData("userType", userData[0]['user_type'].toString());
-
-      Get.to(const HomePage());
+      print("Should go here home page");
+      Get.to(() => HomePage());
+      return;
     }
 
-    Get.to(LoginPage());
+    Get.to(() => LoginPage());
   }
 
   @override

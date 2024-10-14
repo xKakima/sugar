@@ -23,6 +23,9 @@ Future<void> _nativeGoogleSignIn(
   );
 
   try {
+    // Force account selection by disconnecting the current session, if any
+    await googleSignIn.signOut(); // Ensure the user chooses an account
+
     final googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
       throw 'Google sign-in aborted.';
@@ -60,8 +63,6 @@ Future<void> _nativeGoogleSignIn(
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
     callback();
-    // Save login status in SharedPreferences
-    // callback();
   } catch (error) {
     print("Sign-in failed: $error");
     if (context.mounted) {
@@ -69,7 +70,6 @@ Future<void> _nativeGoogleSignIn(
         "Sign-in failed: $error",
         3,
       );
-      // );
     }
   }
 }
@@ -103,7 +103,7 @@ class LoginPage extends StatelessWidget {
                   SizedBox(height: buttonTopPadding), // Space above the button
                   GestureDetector(
                     onTap: () => _nativeGoogleSignIn(
-                        context, () => Get.to(PartnerCodePage())),
+                        context, () => Get.to(() => PartnerCodePage())),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(

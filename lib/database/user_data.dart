@@ -17,7 +17,13 @@ Future<dynamic> fetchSpecificUserData(dynamic column) async {
 }
 
 Future<dynamic> findPartner(String code) async {
-  return await supabase.from('user_data').select('*').eq('unique_code', code);
+  final response = await supabase
+      .from('user_data_limited')
+      .select('*')
+      .eq('unique_code', code)
+      .single();
+  print("ResponseEEEEEEEEE: ${response}");
+  return response;
 }
 
 Future<Map<String, dynamic>> upsertUserData(

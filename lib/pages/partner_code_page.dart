@@ -69,8 +69,6 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
         print("Valid partner data: $partnerData");
 
         dataStore.setData("partnerCode", code);
-        // Navigate to InvitePage or do further logic
-        // Get.to(InvitePage(role: partnerData));
       }
     } catch (e) {
       print("Error checking partner code: $e");
@@ -164,7 +162,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
                       // Clickable text
                       GestureDetector(
                         onTap: () {
-                          Get.to(const RoleSelectionPage());
+                          Get.to(() => RoleSelectionPage());
                         },
                         child: const Text(
                           "i don't have one... yet.",

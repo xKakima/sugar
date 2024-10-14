@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/buttons/rectangle_button.dart';
 import 'package:sugar/widgets/notifier.dart';
@@ -8,16 +10,16 @@ import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/monthly_budget_page.dart';
 
 class InvitePage extends StatefulWidget {
-  final String role;
-
-  InvitePage({Key? key, required this.role}) : super(key: key);
+  InvitePage({Key? key}) : super(key: key);
 
   @override
   _InvitePageState createState() => _InvitePageState();
 }
 
 class _InvitePageState extends State<InvitePage> {
+  final dataStore = Get.find<DataStoreController>();
   late String uniqueCode = '';
+  late String userType = dataStore.getData("userType");
 
   @override
   void initState() {
@@ -33,11 +35,11 @@ class _InvitePageState extends State<InvitePage> {
 
   @override
   Widget build(BuildContext context) {
-    String inviteText = widget.role == 'sugar_baby'
+    String inviteText = userType == 'sugar_baby'
         ? 'invite\nyour\nsugar\ndaddy'
         : 'invite\nyour\nsugar\nbaby';
 
-    String iconAsset = widget.role == 'sugar_baby'
+    String iconAsset = userType == 'sugar_baby'
         ? 'assets/images/sugar_baby_icon.png'
         : 'assets/images/sugar_daddy_icon.png';
 

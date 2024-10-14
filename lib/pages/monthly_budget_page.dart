@@ -40,7 +40,7 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
     print(budgetResponse);
     dataStore.setData("sweetFundsBalance", value);
 
-    Get.to(const HomePage());
+    Get.to(() => HomePage());
   }
 
   void confirmBudget() {

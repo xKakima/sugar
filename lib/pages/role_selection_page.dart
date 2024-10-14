@@ -24,13 +24,13 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
     setState(() {
       selectedRole = role;
     });
-    final upsertResponse = await upsertUserData({"userType": selectedRole});
+    final upsertResponse = await upsertUserData({"user_type": selectedRole});
 
     dataStore.setData("userType", role);
 
     print("upsert response ${upsertResponse}");
 
-    Get.to(InvitePage(role: role));
+    Get.to(() => InvitePage());
   }
 
   @override

@@ -171,8 +171,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE VIEW sugar.user_data_limited AS
+SELECT user_id, user_type, unique_code,created_at
+FROM sugar.user_data;
+
+
 GRANT USAGE ON SCHEMA sugar TO anon, authenticated;
+GRANT SELECT ON sugar.user_data_limited TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sugar TO authenticated;
+
 
 
 -- TODO: create a table for transactions
