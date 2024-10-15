@@ -33,7 +33,7 @@ $$ LANGUAGE plpgsql;
 DO $$ 
 BEGIN 
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_type') THEN 
-    CREATE TYPE sugar.user_type AS ENUM ('DADDY', 'BABY'); 
+    CREATE TYPE sugar.user_type AS ENUM ('DADDY', 'BABY', 'NONE'); 
   END IF; 
 END $$;
 
@@ -42,12 +42,12 @@ CREATE TABLE sugar.user_data (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id),
     partner_id UUID REFERENCES auth.users(id),
-    user_type sugar.user_type NOT NULL DEFAULT 'BABY',
+    user_type sugar.user_type NOT NULL DEFAULT 'NONE',
     unique_code VARCHAR(255),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
--- Disabled RLS for this table
+-- ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE sugar.monthly_budget (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -59,7 +59,7 @@ CREATE TABLE sugar.monthly_budget (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE sugar.monthly_budget ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE sugar.account (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -69,7 +69,7 @@ CREATE TABLE sugar.account (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE sugar.account ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE sugar.account ENABLE ROW LEVEL SECURITY;
 
 -- Create Triggers
 CREATE OR REPLACE FUNCTION sugar.update_updated_at_column()
@@ -111,40 +111,41 @@ FOR EACH ROW
 EXECUTE FUNCTION sugar.set_monthly_budget_balance();
 
 
-DO $$
-DECLARE
-    rec RECORD;
-    schema_name CONSTANT TEXT := 'sugar';
-BEGIN
-    FOR rec IN
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = schema_name
-          AND table_type = 'BASE TABLE'
-    LOOP
-        -- Check if 'user_id' column exists in the table
-        IF EXISTS (
-            SELECT 1
-            FROM information_schema.columns
-            WHERE table_schema = schema_name
-              AND table_name = rec.table_name
-              AND column_name = 'user_id'
-        ) THEN
-            -- Enable RLS on the table
-            EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY;', schema_name, rec.table_name);
+-- DO $$
+-- DECLARE
+--     rec RECORD;
+--     schema_name CONSTANT TEXT := 'sugar';
+-- BEGIN
+--     FOR rec IN
+--         SELECT table_name
+--         FROM information_schema.tables
+--         WHERE table_schema = schema_name
+--           AND table_type = 'BASE TABLE'
+--     LOOP
+--         -- Check if 'user_id' column exists in the table
+--         IF EXISTS (
+--             SELECT 1
+--             FROM information_schema.columns
+--             WHERE table_schema = schema_name
+--               AND table_name = rec.table_name
+--               AND column_name = 'user_id'
+--         ) THEN
+--             -- Enable RLS on the table
+--             EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY;', schema_name, rec.table_name);
 
-            -- Create the policy
-            EXECUTE format(
-                'CREATE POLICY "Users can manage their own data on %I.%I" ON %I.%I
-                 FOR ALL
-                 TO authenticated
-                 USING (auth.uid() = user_id)
-                 WITH CHECK (auth.uid() = user_id);',
-                schema_name, rec.table_name, schema_name, rec.table_name
-            );
-        END IF;
-    END LOOP;
-END $$;
+--             -- Create the policy
+--             EXECUTE format(
+--                 'CREATE POLICY "Users can manage their own data on %I.%I" ON %I.%I
+--                  FOR ALL
+--                  TO authenticated
+--                  USING (auth.uid() = user_id)
+--                  WITH CHECK (auth.uid() = user_id);',
+--                 schema_name, rec.table_name, schema_name, rec.table_name
+--             );
+--         END IF;
+--     END LOOP;
+-- END $$;
+
 
 CREATE OR REPLACE FUNCTION sugar.check_reset_day() 
 RETURNS VOID AS $$
@@ -171,9 +172,53 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION sugar.add_partner(_unique_code VARCHAR(255), _user_id UUID)
+RETURNS UUID AS $$
+DECLARE
+    partner_user_id UUID;
+    partner_user_type sugar.user_type;
+BEGIN
+    -- Check if the partner exists and get their info
+    SELECT user_id, user_type INTO partner_user_id, partner_user_type
+    FROM sugar.user_data
+    WHERE unique_code = _unique_code;
 
+    -- Raise exception if partner not found
+    IF partner_user_id IS NULL THEN
+        RAISE EXCEPTION 'Partner does not exist in user_data';
+    END IF;
+
+    -- Update partner relationship and roles
+    IF partner_user_type = 'DADDY' THEN
+        -- Set current user as BABY
+        UPDATE sugar.user_data
+        SET partner_id = partner_user_id, user_type = 'BABY'
+        WHERE user_id = _user_id;
+
+        -- Set partner's partner_id to current user
+        UPDATE sugar.user_data
+        SET partner_id = _user_id
+        WHERE user_id = partner_user_id;
+    ELSE
+        -- Set current user as DADDY
+        UPDATE sugar.user_data
+        SET partner_id = partner_user_id, user_type = 'DADDY'
+        WHERE user_id = _user_id;
+
+        -- Set partner's partner_id to current user
+        UPDATE sugar.user_data
+        SET partner_id = _user_id
+        WHERE user_id = partner_user_id;
+    END IF;
+
+    -- Return the partner's user_id
+    RETURN partner_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+GRANT SELECT ON auth.users TO authenticated;
 GRANT USAGE ON SCHEMA sugar TO anon, authenticated;
-GRANT SELECT ON sugar.user_data_limited TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sugar TO authenticated;
 
 

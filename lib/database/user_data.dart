@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 final SupabaseClient supabase = Supabase.instance.client;
 
+//TODO return single row
 Future<PostgrestList> fetchUserData() async {
   return await supabase
       .from('user_data')
@@ -16,12 +17,15 @@ Future<dynamic> fetchSpecificUserData(dynamic column) async {
       .eq('user_id', supabase.auth.currentUser!.id);
 }
 
-Future<dynamic> findPartner(String code) async {
-  final response =
-      await supabase.from('user_data').select('*').eq('unique_code', code);
-  // .single();
-  print("ResponseEEEEEEEEE: ${response}");
-  return response;
+Future<String> addPartner(String code) async {
+  try {
+    return await supabase.rpc('add_partner', params: {
+      '_unique_code': code,
+      '_user_id': supabase.auth.currentUser!.id
+    });
+  } catch (e) {
+    return '';
+  }
 }
 
 Future<Map<String, dynamic>> upsertUserData(

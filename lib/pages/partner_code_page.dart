@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/role_selection_page.dart';
@@ -8,6 +9,7 @@ import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/utils.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/pages/invite_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PartnerCodePage extends StatefulWidget {
   const PartnerCodePage({super.key});
@@ -17,6 +19,8 @@ class PartnerCodePage extends StatefulWidget {
 }
 
 class _PartnerCodePageState extends State<PartnerCodePage> {
+  final supabase = Supabase.instance.client;
+
   final TextEditingController _partnerCodeController = TextEditingController();
   final FocusNode _focusNode = FocusNode(); // Create a FocusNode
   String _previousText = ''; // Store the previous text to detect paste events
@@ -62,44 +66,31 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
     }
 
     try {
-      final codeResponse = await findPartner(code);
-      print("codeResponse: $codeResponse");
-
-      if (codeResponse.isEmpty) {
-        // Check if the list is empty correctly
-        Notifier.show("Invalid partner code!", 3);
+      final partnerId = await addPartner(code);
+      print("Code response: $partnerId");
+      if (partnerId == '') {
+        Notifier.show("Invalid code. Please try again.", 3);
         _hasCheckedPartnerCode = false;
-      } else {
-        // Notifier.show("Partner Found!", 3);
-        print("codeResponse 0: ${codeResponse[0]}");
-        print("codeResponse 0 userid: ${codeResponse[0]['user_id']}");
-
-        String userType =
-            codeResponse[0]['user_type'] == 'DADDY' ? 'BABY' : 'DADDY';
-        final upsertResponse = await upsertUserData(
-            {'partner_id': codeResponse[0]['user_id'], 'user_type': userType});
-        if (upsertResponse['success']) {
-          await upsertUserData({
-            'user_id': codeResponse[0]['user_id'],
-            'partner_id': supabase.auth.currentUser!.id
-          });
-          Notifier.show("Partner code added successfully!", 3);
-          dataStore.setData("partnerId", codeResponse[0]['user_id']);
-          Get.to(() => HomePage());
-        } else {
-          Notifier.show("Something went wrong. Please try again.", 3);
-        }
-        _hasCheckedPartnerCode = false;
+        return;
       }
+
+      Notifier.show("Partner code added successfully!", 3);
+      dataStore.setData("partnerCode", code);
+
+      final balance = await fetchBudget(partnerId);
+      dataStore.setData("sweetFundsBalance", balance);
+      final userData = await fetchUserData();
+      dataStore.setData("userType", userData[0]['user_type'].toString());
+      print("Budget: $balance");
+
+      Get.to(() => HomePage());
+
+      _hasCheckedPartnerCode = false;
     } catch (e) {
       print("Error checking partner code: $e");
       Notifier.show("Something went wrong. Please try again.", 3);
       _hasCheckedPartnerCode = false;
     }
-  }
-
-  void onConfirm() {
-    print("Test"); // Update the flag to true
   }
 
   @override
@@ -157,13 +148,6 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
                         width: getWidthPercentage(context, 60),
                         child: TextField(
                           controller: _partnerCodeController,
-                          focusNode: _focusNode, // Attach the FocusNode
-                          textInputAction: TextInputAction
-                              .done, // Sets "Done" or "Enter" on the keyboard
-                          onSubmitted: (value) {
-                            // Call checkPartnerCode when the user presses Enter
-                            checkPartnerCode();
-                          },
                           decoration: InputDecoration(
                             hintText: 'Enter code here',
                             filled: true,

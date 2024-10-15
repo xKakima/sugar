@@ -70,8 +70,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _redirect(isLoggedIn) async {
     if (isLoggedIn) {
-      final balance = await fetchBudget();
+      // Double check if user is in user_data table
+
       final userData = await fetchUserData();
+      if (userData.isEmpty) {
+        Get.to(() => LoginPage());
+        return;
+      } else if (userData[0]['user_type'] == "NONE") {
+        Get.to(() => LoginPage());
+        return;
+      }
+
+      final balance = await fetchBudget(userData[0]['partner_id']);
       dataStore.setData("sweetFundsBalance", balance);
       dataStore.setData("userType", userData[0]['user_type'].toString());
       print("Should go here home page");

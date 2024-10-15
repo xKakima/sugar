@@ -18,20 +18,11 @@ Future<Map<String, dynamic>> upsertBudget(
   }
 }
 
-Future<String> fetchBudget() async {
+Future<String> fetchBudget(partnerId) async {
   late PostgrestList budget;
   budget = await supabase
       .from('monthly_budget')
       .select('*')
-      .eq('user_id', {supabase.auth.currentUser?.id});
-
-  if (budget.isEmpty) {
-    print("No budget found for user, fetching partner balance");
-    budget = await supabase
-        .from('monthly_budget')
-        .select('*')
-        .eq('partner_id', {supabase.auth.currentUser?.id});
-  }
-  print("fetch balance: $budget");
+      .or('user_id.eq.${supabase.auth.currentUser?.id},user_id.eq.$partnerId');
   return formatWithCommas(budget[0]['budget'].toString());
 }
