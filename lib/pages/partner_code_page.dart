@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/database/user_data.dart';
+import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/role_selection_page.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
@@ -20,6 +21,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
   final FocusNode _focusNode = FocusNode(); // Create a FocusNode
   String _previousText = ''; // Store the previous text to detect paste events
   final dataStore = Get.find<DataStoreController>();
+  bool _hasCheckedPartnerCode = false;
 
   void initState() {
     super.initState();
@@ -49,6 +51,9 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
   }
 
   Future<void> checkPartnerCode() async {
+    if (_hasCheckedPartnerCode) return;
+    _hasCheckedPartnerCode = true;
+
     final code = _partnerCodeController.text;
     _partnerCodeController.clear(); // Clear the input field
     if (code.isEmpty) {
@@ -63,17 +68,38 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
       if (codeResponse.isEmpty) {
         // Check if the list is empty correctly
         Notifier.show("Invalid partner code!", 3);
+        _hasCheckedPartnerCode = false;
       } else {
-        // Extract data from the response if needed
-        final partnerData = codeResponse[0];
-        print("Valid partner data: $partnerData");
+        // Notifier.show("Partner Found!", 3);
+        print("codeResponse 0: ${codeResponse[0]}");
+        print("codeResponse 0 userid: ${codeResponse[0]['user_id']}");
 
-        dataStore.setData("partnerCode", code);
+        String userType =
+            codeResponse[0]['user_type'] == 'DADDY' ? 'BABY' : 'DADDY';
+        final upsertResponse = await upsertUserData(
+            {'partner_id': codeResponse[0]['user_id'], 'user_type': userType});
+        if (upsertResponse['success']) {
+          await upsertUserData({
+            'user_id': codeResponse[0]['user_id'],
+            'partner_id': supabase.auth.currentUser!.id
+          });
+          Notifier.show("Partner code added successfully!", 3);
+          dataStore.setData("partnerId", codeResponse[0]['user_id']);
+          Get.to(() => HomePage());
+        } else {
+          Notifier.show("Something went wrong. Please try again.", 3);
+        }
+        _hasCheckedPartnerCode = false;
       }
     } catch (e) {
       print("Error checking partner code: $e");
       Notifier.show("Something went wrong. Please try again.", 3);
+      _hasCheckedPartnerCode = false;
     }
+  }
+
+  void onConfirm() {
+    print("Test"); // Update the flag to true
   }
 
   @override
@@ -170,6 +196,15 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
                             color: Colors.white,
                             fontSize: 16,
                           ),
+                        ),
+                      ),
+                      SizedBox(height: getHeightPercentage(context, 30)),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: IconButton(
+                          icon: const Icon(Icons.check_box,
+                              color: Colors.white, size: 50),
+                          onPressed: checkPartnerCode,
                         ),
                       ),
                     ],

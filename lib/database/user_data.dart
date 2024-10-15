@@ -17,11 +17,9 @@ Future<dynamic> fetchSpecificUserData(dynamic column) async {
 }
 
 Future<dynamic> findPartner(String code) async {
-  final response = await supabase
-      .from('user_data_limited')
-      .select('*')
-      .eq('unique_code', code)
-      .single();
+  final response =
+      await supabase.from('user_data').select('*').eq('unique_code', code);
+  // .single();
   print("ResponseEEEEEEEEE: ${response}");
   return response;
 }
@@ -30,7 +28,10 @@ Future<Map<String, dynamic>> upsertUserData(
     Map<String, dynamic> userData) async {
   try {
     // add user_id to userData
-    userData['user_id'] = supabase.auth.currentUser!.id;
+    if (userData['user_id'] == null) {
+      userData['user_id'] = supabase.auth.currentUser!.id;
+    }
+    print("Upserting user data: $userData");
     await supabase.from('user_data').upsert(userData);
 
     print('Upsert successful');

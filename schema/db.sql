@@ -47,7 +47,7 @@ CREATE TABLE sugar.user_data (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE sugar.user_data ENABLE ROW LEVEL SECURITY;
+-- Disabled RLS for this table
 
 CREATE TABLE sugar.monthly_budget (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
@@ -170,11 +170,6 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE VIEW sugar.user_data_limited AS
-SELECT user_id, user_type, unique_code,created_at
-FROM sugar.user_data;
 
 
 GRANT USAGE ON SCHEMA sugar TO anon, authenticated;

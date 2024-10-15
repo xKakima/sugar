@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     // Check the login status
     //TODO
-    prefs.setBool('isLoggedIn', false);
+    // prefs.setBool('isLoggedIn', false);
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     print('Is logged in: $isLoggedIn');
 

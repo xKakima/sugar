@@ -1,11 +1,18 @@
 // profile_icon.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sugar/pages/login_page.dart';
 
 class ProfileIcon extends StatelessWidget {
   const ProfileIcon({super.key});
 
-  void _navigateToProfile() {
+//TODO
+  Future<void> _navigateToProfile() async {
     // Handle profile navigation
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool("isLoggedIn", false);
+    Get.to(() => LoginPage());
     print("Navigate to profile");
   }
 
