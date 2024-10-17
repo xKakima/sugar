@@ -41,8 +41,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _startLoading() async {
     final prefs = await SharedPreferences.getInstance();
     // Check the login status
-    //TODO
-    // prefs.setBool('isLoggedIn', false);
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     print('Is logged in: $isLoggedIn');
 
@@ -73,17 +71,19 @@ class _SplashScreenState extends State<SplashScreen> {
       // Double check if user is in user_data table
 
       final userData = await fetchUserData();
-      if (userData.isEmpty) {
-        Get.to(() => LoginPage());
-        return;
-      } else if (userData[0]['user_type'] == "NONE") {
+      print(userData);
+      if (userData.isEmpty || userData['user_id'] == null) {
         Get.to(() => LoginPage());
         return;
       }
 
-      final balance = await fetchBudget(userData[0]['partner_id']);
+      if (userData['partner_id'] != null) {
+        dataStore.setData("partnerId", userData['partner_id']);
+      }
+
+      final balance = await fetchBudget(userData['partner_id']);
       dataStore.setData("sweetFundsBalance", balance);
-      dataStore.setData("userType", userData[0]['user_type'].toString());
+      dataStore.setData("userType", userData['user_type'].toString());
       print("Should go here home page");
       Get.to(() => HomePage());
       return;

@@ -23,13 +23,84 @@ class _HomePageState extends State<HomePage> {
   late String welcomeText =
       dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
 
+  late bool hasPartner = dataStore.getData("partnerId") != null ? true : false;
+
+  String getBalanceBoxTitle(bool isUsersAccount) {
+    if (isUsersAccount) {
+      return dataStore.getData("userType") == "DADDY"
+          ? "sugar daddy balance"
+          : "sugar baby balance";
+    }
+    return dataStore.getData("userType") == "DADDY"
+        ? "sugar baby balance"
+        : "sugar daddy balance";
+  }
+
+  Color getBalanceBoxColor(bool isUsersAccount) {
+    if (isUsersAccount) {
+      return dataStore.getData("userType") == "DADDY"
+          ? AppColors.sugarDaddyBalance.color
+          : AppColors.sugarBabyBalance.color;
+    }
+    return dataStore.getData("userType") == "DADDY"
+        ? AppColors.sugarBabyBalance.color
+        : AppColors.sugarDaddyBalance.color;
+  }
+
+  List<dynamic> balanceBoxes() {
+    if (!hasPartner) {
+      return [
+        BalanceBox(
+          title: getBalanceBoxTitle(true),
+          amount: '0',
+          onTap: () => Get.to(() => AccountPage(
+                title: getBalanceBoxTitle(true),
+                headerColor: getBalanceBoxColor(true),
+              )),
+          color: getBalanceBoxColor(true),
+        ),
+        const SizedBox(height: 8),
+        BalanceBox(
+          title: '',
+          amount: '600,000',
+          onTap: () => Get.to(() =>
+              AccountPage(title: '', headerColor: getBalanceBoxColor(false))),
+          color: getBalanceBoxColor(false),
+          hasNoLink: true,
+        ),
+        const SizedBox(height: 16)
+      ];
+    }
+
+    return [
+      BalanceBox(
+        title: getBalanceBoxTitle(true),
+        amount: '0',
+        onTap: () => Get.to(() => AccountPage(
+            title: getBalanceBoxTitle(true),
+            headerColor: getBalanceBoxColor(true))),
+        color: getBalanceBoxColor(true),
+      ),
+      const SizedBox(height: 8),
+      BalanceBox(
+        title: getBalanceBoxTitle(false),
+        amount: '600,000',
+        onTap: () => Get.to(() => AccountPage(
+            title: getBalanceBoxTitle(false),
+            headerColor: getBalanceBoxColor(false))),
+        color: getBalanceBoxColor(false),
+      ),
+      const SizedBox(height: 16)
+    ];
+  }
+
   Future<dynamic> fetchAccounts() async {
     // Simulate a delay or replace with your API/database query logic
     await Future.delayed(const Duration(seconds: 3));
     return [
       // Use AccountBox component
       AccountBox(
-        bankName: 'BANK 01',
+        accountName: 'BANK 01',
         amount: '450,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -37,7 +108,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       AccountBox(
-        bankName: 'BANK 02',
+        accountName: 'BANK 02',
         amount: '97,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -45,7 +116,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       AccountBox(
-        bankName: 'BANK 03',
+        accountName: 'BANK 03',
         amount: '450,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -53,7 +124,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       AccountBox(
-        bankName: 'BANK 04',
+        accountName: 'BANK 04',
         amount: '97,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -61,7 +132,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       AccountBox(
-        bankName: 'BANK 05',
+        accountName: 'BANK 05',
         amount: '450,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -69,7 +140,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       AccountBox(
-        bankName: 'BANK 06',
+        accountName: 'BANK 06',
         amount: '97,000',
         accountNumber: '5283 2548 4700 2489',
         onTap: () {
@@ -148,46 +219,15 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Column(
-                      children: [
-                        //TODO Dynamic Data
-                        BalanceBox(
-                          title: 'sugar baby balance',
-                          amount: '0',
-                          onTap: () => Get.to(() => SkeletonLoader(
-                                loadData: fetchAccounts,
-                                buildPage: (data) => AccountPage(
-                                  title: 'sugar baby balance',
-                                  accounts: data,
-                                ),
-                              )),
-                          color: AppColors.sugarBabyBalance.color,
-                        ),
-                        const SizedBox(height: 8),
-                        BalanceBox(
-                          title: 'sugar daddy balance',
-                          amount: '600,000',
-                          onTap: () => Get.to(() => SkeletonLoader(
-                                loadData: fetchAccounts,
-                                buildPage: (data) => AccountPage(
-                                  title: 'sugar baby balance',
-                                  accounts: data,
-                                ),
-                              )),
-                          color: AppColors.sugarDaddyBalance.color,
-                          hasNoLink: true,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                      children: [...balanceBoxes()],
                     ),
 
-                    // Spacer to push the PlusButton to the bottom
                     const Spacer(),
 
-                    // Plus Button Positioned at the Bottom
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: PlusButton(
-                        onPressed: () => print("ADD ACCOUNT"),
+                        onPressed: () => print("ADD Transaction"),
                       ),
                     ),
                   ],

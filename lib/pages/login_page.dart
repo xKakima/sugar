@@ -46,8 +46,8 @@ Future<void> _nativeGoogleSignIn(
       accessToken: accessToken,
     );
 
-    final fetchResponse = await fetchUserData();
-    if (fetchResponse.isEmpty) {
+    final userData = await fetchUserData();
+    if (userData.isEmpty || userData['user_id'] == null) {
       final insertResponse =
           await insertUserData(supabase.auth.currentUser!.id);
       if (!insertResponse['success']) {

@@ -8,7 +8,8 @@ class CustomBackButton extends StatelessWidget {
     return Align(
       alignment: Alignment.topLeft,
       child: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+        icon:
+            const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 15),
         onPressed: () {
           Navigator.pop(context);
         },

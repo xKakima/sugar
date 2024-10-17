@@ -1,37 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sugar/widgets/buttons/back_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
+import 'package:sugar/widgets/utils.dart';
 
 class AccountPageHeader extends StatelessWidget {
   final String title;
   final String balance;
+  final bool isExpanded;
 
-  const AccountPageHeader(
-      {super.key, required this.title, required this.balance});
+  const AccountPageHeader({
+    super.key,
+    required this.title,
+    required this.balance,
+    required this.isExpanded,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
                 CustomBackButton(),
+                const SizedBox(width: 4),
                 Text(
-                  'Mon, 22 September 2024',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                  formattedDate(),
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 14,
                   ),
                 ),
               ],
             ),
+            const ProfileIcon(),
           ],
         ),
-        const ProfileIcon(),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        AnimatedOpacity(
+          opacity:
+              isExpanded ? 0.0 : 1.0, // Use the isExpanded state to hide/show
+          duration: const Duration(milliseconds: 300),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'TOTAL AMOUNT',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'PHP ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    balance,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

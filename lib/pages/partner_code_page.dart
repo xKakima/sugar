@@ -80,7 +80,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
       final balance = await fetchBudget(partnerId);
       dataStore.setData("sweetFundsBalance", balance);
       final userData = await fetchUserData();
-      dataStore.setData("userType", userData[0]['user_type'].toString());
+      dataStore.setData("userType", userData['user_type'].toString());
       print("Budget: $balance");
 
       Get.to(() => HomePage());

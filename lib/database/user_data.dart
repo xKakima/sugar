@@ -2,12 +2,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 final SupabaseClient supabase = Supabase.instance.client;
 
-//TODO return single row
-Future<PostgrestList> fetchUserData() async {
-  return await supabase
-      .from('user_data')
-      .select('*')
-      .eq('user_id', supabase.auth.currentUser!.id);
+Future<PostgrestMap> fetchUserData() async {
+  try {
+    final userData = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('user_id', supabase.auth.currentUser!.id)
+        .single();
+
+    return userData;
+  } catch (e) {
+    print("Error fetching user data: $e");
+    return PostgrestMap();
+  }
 }
 
 Future<dynamic> fetchSpecificUserData(dynamic column) async {

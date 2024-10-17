@@ -76,3 +76,8 @@ String getDaySuffix(int day) {
       return 'th';
   }
 }
+
+String formattedDate({DateTime? date}) {
+  final DateTime now = date ?? DateTime.now();
+  return DateFormat('EEE, dd MMMM yyyy').format(now);
+}

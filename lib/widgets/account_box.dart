@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class AccountBox extends StatelessWidget {
-  final String bankName;
+  final String accountName;
   final String amount;
   final String accountNumber;
   final VoidCallback onTap;
 
   const AccountBox({
     super.key,
-    required this.bankName,
+    required this.accountName,
     required this.amount,
     required this.accountNumber,
     required this.onTap,
@@ -19,59 +20,45 @@ class AccountBox extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.teal, Colors.blueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.black.withOpacity(0.2),
+          // Adjust the corner radius for a more rounded look
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // Account Name
+            Text(
+              accountName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const Text(
+                  'PHP',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 2),
                 Text(
-                  bankName,
+                  amount,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'PHP $amount',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              accountNumber,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
             ),
           ],
         ),
