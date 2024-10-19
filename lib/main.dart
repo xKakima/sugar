@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/controller/data_store_controller.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:sugar/firebase_options.dart';
 import 'package:sugar/pages/splash_screen_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -20,8 +21,11 @@ Future<void> main() async {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjdHRidm5yeW9xZHdmdm1iYm5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1MjI1MTksImV4cCI6MjA0MzA5ODUxOX0.8UD_O56w8GCGAaTSOALVXaK6d9V13eC5AR467qvGCZw",
     postgrestOptions: const PostgrestClientOptions(schema: 'sugar'),
   ).then((value) => print("Supabase initialized: $value"));
-
   Get.put(DataStoreController());
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MyApp());
 }

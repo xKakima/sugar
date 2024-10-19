@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/partner_code_page.dart';
 import 'package:sugar/widgets/background.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sugar/widgets/notifier.dart';
-import 'package:sugar/database/user_data.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sugar/pages/role_selection_page.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -61,6 +60,8 @@ Future<void> _nativeGoogleSignIn(
     );
 
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("googleIdToken", idToken);
+    await prefs.setString("googleAccessToken", accessToken);
     await prefs.setBool('isLoggedIn', true);
     callback();
   } catch (error) {

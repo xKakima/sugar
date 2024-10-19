@@ -4,14 +4,14 @@ import 'package:flutter/widgets.dart';
 class AccountBox extends StatelessWidget {
   final String accountName;
   final String amount;
-  final String accountNumber;
+  // final String accountNumber;
   final VoidCallback onTap;
 
   const AccountBox({
     super.key,
     required this.accountName,
     required this.amount,
-    required this.accountNumber,
+    // required this.accountNumber,
     required this.onTap,
   });
 

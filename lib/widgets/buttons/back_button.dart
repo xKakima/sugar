@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CustomBackButton extends StatelessWidget {
-  const CustomBackButton({super.key});
+  // Add an optinal CallBack function to the constructor
+  final VoidCallback? onPressed;
+  const CustomBackButton({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +13,15 @@ class CustomBackButton extends StatelessWidget {
         icon:
             const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 15),
         onPressed: () {
-          Navigator.pop(context);
+          // Check if onPressed is null
+          if (onPressed != null) {
+            // Call the function if it is not null
+            onPressed!();
+          }
+          // If onPressed is null, pop the current screen
+          else {
+            Navigator.pop(context);
+          }
         },
       ),
     );

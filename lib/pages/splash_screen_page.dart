@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/utils.dart';
@@ -10,6 +11,7 @@ import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/login_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,6 +22,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final supabase = Supabase.instance.client;
   final dataStore = Get.find<DataStoreController>();
   double _progress = 0.0;
   late Timer _timer;
@@ -39,8 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startLoading() async {
-    final prefs = await SharedPreferences.getInstance();
     // Check the login status
+    final prefs = await SharedPreferences.getInstance();
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     print('Is logged in: $isLoggedIn');
 
@@ -67,29 +70,59 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _redirect(isLoggedIn) async {
-    if (isLoggedIn) {
-      // Double check if user is in user_data table
-
-      final userData = await fetchUserData();
-      print(userData);
-      if (userData.isEmpty || userData['user_id'] == null) {
-        Get.to(() => LoginPage());
-        return;
-      }
-
-      if (userData['partner_id'] != null) {
-        dataStore.setData("partnerId", userData['partner_id']);
-      }
-
-      final balance = await fetchBudget(userData['partner_id']);
-      dataStore.setData("sweetFundsBalance", balance);
-      dataStore.setData("userType", userData['user_type'].toString());
-      print("Should go here home page");
-      Get.to(() => HomePage());
+    final prefs = await SharedPreferences.getInstance();
+    print("Is logged in: $isLoggedIn");
+    if (!isLoggedIn) {
+      Get.to(() => LoginPage());
       return;
     }
+    // Attempt silent sign-in with Google to refresh tokens
+    try {
+      final googleUser = await GoogleSignIn().signInSilently();
+      if (googleUser != null) {
+        // Successfully refreshed tokens, now retrieve the new accessToken and idToken
+        final googleAuth = await googleUser.authentication;
+        final accessToken = googleAuth.accessToken;
+        final idToken = googleAuth.idToken;
+        // Store the new tokens in SharedPreferences
+        await prefs.setString("googleIdToken", idToken!);
+        await prefs.setString("googleAccessToken", accessToken!);
+        // Sign in to Supabase using the new tokens
+        await supabase.auth.signInWithIdToken(
+          provider: OAuthProvider.google,
+          idToken: idToken,
+          accessToken: accessToken,
+        );
 
-    Get.to(() => LoginPage());
+        final userData = await fetchUserData();
+        print(userData);
+        if (userData.isEmpty || userData['user_id'] == null) {
+          Get.to(() => LoginPage());
+          return;
+        }
+
+        late String balance;
+        if (userData['partner_id'] != null) {
+          dataStore.setData("partnerId", userData['partner_id']);
+          balance = await fetchBudget(userData['partner_id']);
+        } else {
+          balance = await fetchBudget(null);
+        }
+
+        dataStore.setData("sweetFundsBalance", balance);
+        dataStore.setData("userType", userData['user_type'].toString());
+        print("Should go here home page");
+        Get.to(() => HomePage());
+        return;
+      } else {
+        // Sign-in failed silently, handle the situation (e.g., log out the user or prompt for login again)
+        print("Silent sign-in failed, please login again.");
+        await logout(); // Call a logout function if needed
+        Get.to(() => LoginPage());
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override

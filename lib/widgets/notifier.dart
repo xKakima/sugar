@@ -2,9 +2,9 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
 class Notifier {
-  static void show(String message, int duration) {
+  static void show(String message, int duration, {String title = ''}) {
     Get.snackbar(
-      '', // Title (can leave empty if not needed)
+      title, // Title (can leave empty if not needed)
       '',
       snackPosition: SnackPosition.BOTTOM,
       duration: Duration(seconds: duration),

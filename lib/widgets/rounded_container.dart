@@ -5,19 +5,22 @@ import 'package:sugar/widgets/utils.dart';
 class RoundedContainer extends StatelessWidget {
   final Widget child;
   final bool isLarge;
+  final double margin;
 
   const RoundedContainer({
     super.key,
     required this.child,
     this.isLarge = false,
+    this.margin = 16,
   });
 
   @override
   Widget build(BuildContext context) {
     double containerHeight = isLarge ? 76 : 65;
+    print("Height: $containerHeight");
     return Container(
       padding: EdgeInsets.all(16),
-      margin: EdgeInsets.only(left: 0, right: 0, top: 16, bottom: 0),
+      margin: EdgeInsets.only(left: 0, right: 0, top: margin, bottom: 0),
       height: getHeightPercentage(
           context, containerHeight), // Adjust height based on screen size
       decoration: BoxDecoration(

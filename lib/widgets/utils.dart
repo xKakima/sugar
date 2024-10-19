@@ -2,7 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 double getWidthPercentage(BuildContext context, double percentage) {
   final screenWidth = MediaQuery.of(context).size.width;
@@ -80,4 +83,33 @@ String getDaySuffix(int day) {
 String formattedDate({DateTime? date}) {
   final DateTime now = date ?? DateTime.now();
   return DateFormat('EEE, dd MMMM yyyy').format(now);
+}
+
+Future<void> logout() async {
+  final supabase = Supabase.instance.client;
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Clears all stored user data
+
+  await supabase.auth.signOut();
+  await GoogleSignIn().signOut(); // Ensure Google session is cleared
+}
+
+String getTypeImageString(type) {
+  switch (type) {
+    case "SNACKS":
+      return "assets/images/snacks.png";
+    case "COFFEE":
+      return "assets/images/coffee.png";
+    case "ICE_CREAM":
+      return "assets/images/ice_cream.png";
+    case "MEAL":
+      return "assets/images/meal.png";
+    case "GROCERY":
+      return "assets/images/grocery.png";
+    case "RAMEN":
+      return "assets/images/ramen.png";
+
+    default:
+      return "assets/images/snacks.png";
+  }
 }

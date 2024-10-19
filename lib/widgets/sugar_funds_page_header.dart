@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controller/account_page_controller.dart';
+import 'package:sugar/controller/sugar_funds_page_controller.dart';
 import 'package:sugar/widgets/buttons/back_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
 import 'package:sugar/widgets/utils.dart';
 
-class AccountPageHeader extends StatelessWidget {
+class SugarFundsPageHeader extends StatelessWidget {
   final String title;
   final String balance;
   final bool isExpanded;
-  final AccountPageController controller = Get.put(AccountPageController());
+  final SugarFundsPageController controller =
+      Get.put(SugarFundsPageController());
 
-  AccountPageHeader({
+  SugarFundsPageHeader({
     super.key,
     required this.title,
     required this.balance,
@@ -29,7 +30,6 @@ class AccountPageHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                // If widget.isExpanded CustomBackButton(() => controller.toggleExpand())
                 if (isExpanded)
                   CustomBackButton(
                     onPressed: () => controller.toggleExpanded(),
@@ -66,7 +66,7 @@ class AccountPageHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'TOTAL AMOUNT',
+                'REMAINING BALANCE',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 8,
