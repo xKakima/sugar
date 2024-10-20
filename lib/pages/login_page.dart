@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
+import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/partner_code_page.dart';
+import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,6 +55,20 @@ Future<void> _nativeGoogleSignIn(
       if (!insertResponse['success']) {
         throw Exception(insertResponse['message']);
       }
+    }
+
+    if (userData['fcm_token'] != null) {
+      late String balance;
+      if (userData['partner_id'] != null) {
+        dataStore.setData("partnerId", userData['partner_id']);
+        balance = await fetchBudget(userData['partner_id']);
+      } else {
+        balance = await fetchBudget(null);
+      }
+
+      dataStore.setData("sweetFundsBalance", balance);
+      Get.to(() => HomePage());
+      return;
     }
 
     Notifier.show(

@@ -1,3 +1,4 @@
+import 'package:sugar/widgets/expense_data.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final SupabaseClient supabase = Supabase.instance.client;
@@ -23,5 +24,19 @@ Future<List<dynamic>?> getExpenses() async {
         params: {'_user_id': supabase.auth.currentUser!.id});
   } catch (e) {
     return null;
+  }
+}
+
+Future<dynamic> addExpense(Map<String, dynamic> expenseData) async {
+  try {
+    // add user_id to userData
+    expenseData['user_id'] = supabase.auth.currentUser!.id;
+    await supabase.from('expense').insert(expenseData);
+
+    print('Insert successful');
+    return {"success": true, "message": 'Insert successful'};
+  } catch (e) {
+    print('Exception during insert: $e');
+    return {"success": false, "message": e.toString()};
   }
 }

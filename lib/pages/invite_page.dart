@@ -35,11 +35,11 @@ class _InvitePageState extends State<InvitePage> {
 
   @override
   Widget build(BuildContext context) {
-    String inviteText = userType == 'sugar_baby'
+    String inviteText = userType == 'BABY'
         ? 'invite\nyour\nsugar\ndaddy'
         : 'invite\nyour\nsugar\nbaby';
 
-    String iconAsset = userType == 'sugar_baby'
+    String iconAsset = userType == 'BABY'
         ? 'assets/images/sugar_baby_icon.png'
         : 'assets/images/sugar_daddy_icon.png';
 

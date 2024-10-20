@@ -91,7 +91,6 @@ class _HomePageState extends State<HomePage> {
       BalanceBox(
         title: getBalanceBoxTitle(false),
         amount: '600,000',
-        hasNoLink: true,
         onTap: () => Get.to(
             () => AccountPage(
                   title: getBalanceBoxTitle(false),

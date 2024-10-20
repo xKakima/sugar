@@ -14,6 +14,21 @@ class ExpenseData extends StatelessWidget {
       required this.type,
       required this.amount});
 
+  factory ExpenseData.fromMap(Map<String, dynamic> data) {
+    print("Parsing Data ${data}");
+    print(data['created_at']);
+    print(data['expense_type']);
+    print(data['amount']);
+    print(data['id']);
+    return ExpenseData(
+      id: data['id'] ?? 'Unknown ID', // Provide a default value if null
+      date: data['created_at'] != null
+          ? DateTime.parse(data['created_at'])
+          : DateTime.now(), // Provide the current date if null
+      type: data['expense_type'] ?? 'Unknown Type', // Default to 'Unknown Type'
+      amount: (data['amount'] as num?)?.toStringAsFixed(2) ?? '0.00',
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Column(children: [

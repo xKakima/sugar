@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sugar/constants/app_colors.dart';
+import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/controller/sugar_funds_page_controller.dart';
 import 'package:sugar/database/expense.dart';
-import 'package:sugar/widgets/account_box.dart';
-import 'package:sugar/widgets/account_page_header.dart';
 import 'package:sugar/widgets/expense_data.dart';
+import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/numpad.dart';
 import 'package:sugar/widgets/plus_button.dart';
 import 'package:sugar/widgets/rounded_container.dart';
 import 'package:sugar/widgets/sugar_funds_page_header.dart';
 import 'package:sugar/widgets/utils.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SugarFundsPage extends StatefulWidget {
   final String title;
@@ -27,6 +24,8 @@ class SugarFundsPage extends StatefulWidget {
 
   final SugarFundsPageController controller =
       Get.put(SugarFundsPageController());
+
+  final DataStoreController dataStore = Get.find<DataStoreController>();
 
   Future<List<ExpenseData>> fetchExpenses() async {
     final response = await getExpenses();
@@ -57,12 +56,24 @@ class SugarFundsPage extends StatefulWidget {
 class _SugarFundsPageState extends State<SugarFundsPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  late final _stream;
+  late final _listener;
 
   @override
   void initState() {
     super.initState();
 
     widget.controller.sugarFundsAmount.value = widget.balance;
+
+    _stream = supabase.from('expense').stream(primaryKey: ['id']).inFilter(
+        'user_id', [
+      supabase.auth.currentUser!.id,
+      widget.dataStore.getData("partnerId")
+    ]).order('created_at', ascending: true);
+
+    _listener = _stream.listen((event) => {
+          print("Event: $event"),
+        });
 
     _animationController = AnimationController(
       vsync: this,
@@ -103,9 +114,10 @@ class _SugarFundsPageState extends State<SugarFundsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<ExpenseData>>(
-          future: widget.fetchExpenses(),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: _stream,
           builder: (context, snapshot) {
+            late List<ExpenseData> expenses = [];
             // Handle errors first
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
@@ -116,8 +128,14 @@ class _SugarFundsPageState extends State<SugarFundsPage>
               return Center(child: CircularProgressIndicator());
             }
 
-            // If the snapshot has data, handle it safely
-            final expenses = snapshot.data ?? [];
+            if (snapshot.hasData) {
+              print("Snapshot data: ${snapshot.data}");
+              expenses = snapshot.data!
+                  .map((data) => ExpenseData.fromMap(data))
+                  .toList();
+            }
+
+            expenses.sort((a, b) => b.date.compareTo(a.date));
 
             return Stack(
               children: [
@@ -216,21 +234,22 @@ class _SugarFundsPageState extends State<SugarFundsPage>
   }
 
   Widget buildTypeImageContainer(String type) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Color.fromARGB(255, 52, 52, 52),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+    return GestureDetector(
+      onTap: () => widget.controller.updateExpenseType(
+          type), // The onTap callback is triggered when the container is tapped
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: widget.controller.expenseType == type
+              ? Color.fromARGB(255, 111, 111, 111)
+              : Color.fromARGB(255, 52, 52, 52),
+          borderRadius: BorderRadius.circular(16),
         ),
-      ),
-      child: Image.asset(
-        getTypeImageString(type), // Use your helper function
-        width: 35,
-        height: 35,
+        child: Image.asset(
+          getTypeImageString(type), // Use your helper function
+          width: 35,
+          height: 35,
+        ),
       ),
     );
   }
@@ -267,24 +286,34 @@ class _SugarFundsPageState extends State<SugarFundsPage>
         ),
         SizedBox(height: getHeightPercentage(context, 1.5)),
         Text(
-          widget.controller.sugarFundsAmount.value,
+          widget.controller.expenseAmount.value == ""
+              ? "0.00"
+              : widget.controller.expenseAmount.value,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 36,
             fontWeight: FontWeight.w600,
           ),
         ),
         SizedBox(height: getHeightPercentage(context, 3)),
         Numpad(
-          onValueChanged: widget.controller.updateSugarFundsAmount,
-          initialValue: widget.controller.sugarFundsAmount.value,
+          onValueChanged: widget.controller.updateExpenseAmount,
+          initialValue: widget.controller.expenseAmount.value,
         ),
         Align(
           alignment: Alignment.bottomCenter,
           child: IconButton(
-            icon: const Icon(Icons.check_box, color: Colors.white, size: 50),
-            onPressed: () => print("test"),
-          ),
+              icon: const Icon(Icons.check_box, color: Colors.white, size: 50),
+              onPressed: () async {
+                final response =
+                    await addExpense(widget.controller.getExpense());
+                print('Response: $response');
+                if (response['success']) {
+                  widget.controller.toggleExpanded();
+                } else {
+                  Notifier.show("Failed to add expense, kindly try again", 3);
+                }
+              }),
         ),
       ],
     );
