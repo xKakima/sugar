@@ -5,13 +5,14 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/widgets/background.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sugar/utils/constants.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,7 +23,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final supabase = Supabase.instance.client;
   final dataStore = Get.find<DataStoreController>();
   double _progress = 0.0;
   late Timer _timer;
@@ -73,6 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     print("Is logged in: $isLoggedIn");
     if (!isLoggedIn) {
+      print("Not logged in, redirecting to login page");
       Get.to(() => LoginPage());
       return;
     }
@@ -97,11 +98,12 @@ class _SplashScreenState extends State<SplashScreen> {
         final userData = await fetchUserData();
         print(userData);
         if (userData.isEmpty || userData['user_id'] == null) {
+          print("User data is empty, redirecting to login page");
           Get.to(() => LoginPage());
           return;
         }
 
-        late String balance;
+        late double balance;
         if (userData['partner_id'] != null) {
           dataStore.setData("partnerId", userData['partner_id']);
           balance = await fetchBudget(userData['partner_id']);
@@ -109,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen> {
           balance = await fetchBudget(null);
         }
 
-        dataStore.setData("sweetFundsBalance", balance);
+        dataStore.sugarFundsBalance.value = balance;
         dataStore.setData("userType", userData['user_type'].toString());
         print("Should go here home page");
         Get.to(() => HomePage());
@@ -118,6 +120,7 @@ class _SplashScreenState extends State<SplashScreen> {
         // Sign-in failed silently, handle the situation (e.g., log out the user or prompt for login again)
         print("Silent sign-in failed, please login again.");
         await logout(); // Call a logout function if needed
+        print('Sign in silently failed, redirecting to login page');
         Get.to(() => LoginPage());
       }
     } catch (e) {

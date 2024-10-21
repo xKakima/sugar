@@ -49,7 +49,7 @@ END $$;
 -- Create Tables
 CREATE TABLE IF NOT EXISTS sugar.user_data (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
-    user_id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     partner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     user_type sugar.user_type NOT NULL DEFAULT 'NONE',
     unique_code VARCHAR(255),
@@ -60,29 +60,29 @@ CREATE TABLE IF NOT EXISTS sugar.user_data (
 
 CREATE TABLE IF NOT EXISTS sugar.monthly_budget (
     id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
-    user_id UUID NOT NULL PRIMARY KEY REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE PRIMARY KEY REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
     partner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    budget integer NOT NULL DEFAULT 10000,
-    balance integer,
+    budget NUMERIC(10,2) NOT NULL DEFAULT 10000.00,
+    balance NUMERIC(10,2),
     reset_day INTEGER CHECK (reset_day BETWEEN 1 AND 31),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS sugar.account (
-    id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
-    user_id UUID NOT NULL PRIMARY KEY REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
+    id UUID NOT NULL UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    user_id UUID NOT NULL REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
     account_name TEXT NOT NULL DEFAULT 'sweet funds',
-    balance NUMERIC NOT NULL DEFAULT 0,
+    balance  NUMERIC(10,2) NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS sugar.expense(
-    id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4 (),
+    id UUID NOT NULL PRIMARY KEY  UNIQUE DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
     expense_type sugar.expense_type NOT NULL,
-    amount NUMERIC NOT NULL,
+    amount NUMERIC(10,2) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -190,6 +190,10 @@ BEGIN
         WHERE user_id = partner_user_id;
     END IF;
 
+    UPDATE sugar.monthly_budget
+    SET partner_id = _user_id
+    WHERE user_id = partner_user_id;
+
     -- Return the partner's user_id
     RETURN partner_user_id;
 END;
@@ -200,7 +204,7 @@ RETURNS TABLE (
     id UUID,
     user_id UUID,
     expense_type sugar.expense_type,
-    amount numeric,
+    amount NUMERIC,
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ
 ) AS $$

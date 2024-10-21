@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/pages/login_page.dart';
+import 'package:sugar/utils/constants.dart';
 
 class ProfileIcon extends StatelessWidget {
   const ProfileIcon({super.key});

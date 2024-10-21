@@ -6,7 +6,7 @@ import 'package:sugar/widgets/monthly_budget_ui.dart';
 import 'package:sugar/widgets/reset_day_ui.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/pages/home_page.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class MonthlyBudget extends StatefulWidget {
   const MonthlyBudget({super.key});
@@ -17,7 +17,7 @@ class MonthlyBudget extends StatefulWidget {
 
 class _MonthlyBudgetState extends State<MonthlyBudget> {
   final dataStore = Get.find<DataStoreController>();
-  String value = '0';
+  double value = 0;
 
   @override
   void initState() {
@@ -25,20 +25,19 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
     dataStore.setData("monthlyBudgetSelected", false);
   }
 
-  void _updateValue(String newValue) {
-    setState(() {
-      value = newValue;
-    });
+  void _updateValue(double newValue) {
+    value = newValue;
   }
 
   Future<void> _goToHomePage() async {
     print("resetDay ${dataStore.getData("resetDay")}");
     final budgetResponse = await upsertBudget({
-      'budget': formatInteger(value),
+      'budget': value,
+      'balance': value,
       'reset_day': dataStore.getData("resetDay"),
-    });
+    }, ownerIsUser: true);
     print(budgetResponse);
-    dataStore.setData("sweetFundsBalance", value);
+    dataStore.sugarFundsBalance.value = value;
 
     Get.to(() => HomePage());
   }

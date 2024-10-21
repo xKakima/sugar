@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 class DataStoreController extends GetxController {
   // Create an observable Map to hold dynamic data
+  RxDouble sugarFundsBalance = 0.0.obs;
+
   var data = <String, dynamic>{}.obs;
 
   // Method to add or update data dynamically

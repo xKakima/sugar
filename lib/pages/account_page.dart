@@ -5,7 +5,7 @@ import 'package:sugar/widgets/account_box.dart';
 import 'package:sugar/widgets/account_page_header.dart';
 import 'package:sugar/widgets/numpad.dart';
 import 'package:sugar/widgets/rounded_container.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class AccountPage extends StatefulWidget {
   final String title;
@@ -24,7 +24,7 @@ class AccountPage extends StatefulWidget {
         amount: '450,000',
         // accountNumber: '5283 2548 4700 2489',
         onTap: () => {
-          controller.updateAccountAmount('450,000'),
+          controller.updateAccountAmount(100000),
           controller.toggleExpanded(),
           // controller.updateAccountBox(this)
           // nvm should be in database
@@ -35,7 +35,7 @@ class AccountPage extends StatefulWidget {
         amount: '97,000',
         // accountNumber: '5283 2548 4700 2489',
         onTap: () => {
-          controller.updateAccountAmount('97,000'),
+          controller.updateAccountAmount(100000),
           controller.toggleExpanded()
         },
       ),
@@ -234,7 +234,7 @@ class _AccountPageState extends State<AccountPage>
         ),
         SizedBox(height: getHeightPercentage(context, 1.5)),
         Text(
-          widget.controller.accountAmount.value,
+          widget.controller.accountAmount.value.toString(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,

@@ -16,15 +16,10 @@ class RoleSelectionPage extends StatefulWidget {
 }
 
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
-  String selectedRole = '';
-
   final dataStore = Get.find<DataStoreController>();
 
   Future<void> _onRoleSelected(String role) async {
-    setState(() {
-      selectedRole = role;
-    });
-    final upsertResponse = await upsertUserData({"user_type": selectedRole});
+    final upsertResponse = await upsertUserData({"user_type": role});
 
     dataStore.setData("userType", role);
 

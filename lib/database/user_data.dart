@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-final SupabaseClient supabase = Supabase.instance.client;
+import 'package:sugar/utils/constants.dart';
 
 Future<PostgrestMap> fetchUserData() async {
   try {

@@ -3,7 +3,7 @@ import 'package:sugar/widgets/account_box.dart';
 
 class AccountPageController extends GetxController {
   RxBool isExpanded = false.obs;
-  RxString accountAmount = "".obs;
+  RxDouble accountAmount = 0.0.obs;
   Rx<AccountBox> accountBoxModifying = AccountBox(
     accountName: "sugar daddy balance",
     amount: "0",
@@ -17,7 +17,7 @@ class AccountPageController extends GetxController {
     isExpanded.value = !isExpanded.value;
   }
 
-  void updateAccountAmount(String amount) {
+  void updateAccountAmount(double amount) {
     accountAmount.value = amount;
   }
 

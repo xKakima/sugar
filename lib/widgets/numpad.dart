@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sugar/widgets/utils.dart';
 
 class Numpad extends StatelessWidget {
-  final Function(String) onValueChanged;
-  final String initialValue;
+  final Function(double) onValueChanged;
+  final double initialValue;
 
   const Numpad({
     Key? key,
     required this.onValueChanged,
-    this.initialValue = '0',
+    this.initialValue = 0,
   }) : super(key: key);
 
   @override
@@ -29,6 +28,8 @@ class Numpad extends StatelessWidget {
         buttonWidth * 0.55; // Keep the height a bit less to make it rectangular
     double buttonSpacing = 8.0; // Space between buttons
 
+    double currentValue = initialValue;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: keys.map((row) {
@@ -39,21 +40,34 @@ class Numpad extends StatelessWidget {
             children: row.map((key) {
               return GestureDetector(
                 onTap: () {
+                  String newValue = currentValue.toString();
+
                   if (key == '⌫') {
-                    if (initialValue.length > 1) {
-                      String newValue =
-                          initialValue.substring(0, initialValue.length - 1);
-                      newValue = formatWithCommas(newValue);
-                      onValueChanged(newValue);
+                    // Handle backspace (⌫) functionality
+                    if (newValue.length > 1) {
+                      newValue = newValue.substring(0, newValue.length - 1);
                     } else {
-                      onValueChanged('0');
+                      newValue = '0';
+                    }
+                    currentValue = double.tryParse(newValue) ?? 0;
+                  } else if (key == '.') {
+                    // Prevent adding more than one decimal point
+                    if (!newValue.contains('.')) {
+                      newValue += key;
+                      currentValue = double.tryParse(newValue) ?? currentValue;
                     }
                   } else {
-                    String newValue =
-                        initialValue == '0' ? key : initialValue + key;
-                    newValue = formatWithCommas(newValue);
-                    onValueChanged(newValue);
+                    // Handle number inputs
+                    newValue =
+                        newValue == '0' && key != '.' ? key : newValue + key;
+                    currentValue = double.tryParse(newValue) ?? currentValue;
                   }
+
+                  // Format the value
+                  // String formattedValue = _formatWithCommas(currentValue);
+                  onValueChanged(currentValue); // Pass the double value
+
+                  print("New value: $currentValue"); // Debugging purpose
                 },
                 child: Container(
                   width: buttonWidth, // Adjusted width
@@ -82,5 +96,8 @@ class Numpad extends StatelessWidget {
     );
   }
 
-  // Utility function to format numbers with commas and apply a limit of 9 digits
+  // Utility function to format numbers with commas, including decimals
+  // String _formatWithCommas(double value) {
+  //   return NumberFormat("#,##0.00").format(value);
+  // }
 }

@@ -2,30 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/controller/sugar_funds_page_controller.dart';
+import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/expense.dart';
+import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/expense_data.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/numpad.dart';
 import 'package:sugar/widgets/plus_button.dart';
 import 'package:sugar/widgets/rounded_container.dart';
 import 'package:sugar/widgets/sugar_funds_page_header.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class SugarFundsPage extends StatefulWidget {
   final String title;
-  final String balance;
   final Color headerColor;
 
-  SugarFundsPage(
-      {super.key,
-      required this.title,
-      required this.balance,
-      required this.headerColor});
+  SugarFundsPage({super.key, required this.title, required this.headerColor});
 
   final SugarFundsPageController controller =
       Get.put(SugarFundsPageController());
-
-  final DataStoreController dataStore = Get.find<DataStoreController>();
 
   Future<List<ExpenseData>> fetchExpenses() async {
     final response = await getExpenses();
@@ -56,24 +51,56 @@ class SugarFundsPage extends StatefulWidget {
 class _SugarFundsPageState extends State<SugarFundsPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  late List<double> _expenses = [];
+  // ignore: prefer_typing_uninitialized_variables
   late final _stream;
-  late final _listener;
+
+  void checkBalance() async {
+    final response = await fetchBudgetData(dataStore.getData('partnerId'));
+    print("Response: $response");
+    if (response?['balance'] == response?['budget'] && _expenses.isNotEmpty) {
+      double totalExpenses = _expenses.reduce((a, b) => a + b);
+      print("Total Expenses: $totalExpenses");
+      double deductedBalance = response?['balance'] - totalExpenses;
+      print("Deducted Balance: $deductedBalance");
+      dataStore.sugarFundsBalance.value = deductedBalance;
+
+      final budgetOwner = dataStore.getData('budgetOwner');
+      print("budget owner: $budgetOwner");
+      print("Upserting ${{'balance': deductedBalance}}");
+      if (budgetOwner == 'user') {
+        await updateBudget({'balance': deductedBalance}, ownerIsUser: true);
+      } else {
+        await updateBudget({'balance': deductedBalance});
+      }
+    } else {
+      dataStore.sugarFundsBalance.value = response!['balance'];
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    widget.controller.sugarFundsAmount.value = widget.balance;
+    dataStore.sugarFundsBalance.value = dataStore.sugarFundsBalance.value;
 
-    _stream = supabase.from('expense').stream(primaryKey: ['id']).inFilter(
-        'user_id', [
-      supabase.auth.currentUser!.id,
-      widget.dataStore.getData("partnerId")
-    ]).order('created_at', ascending: true);
+    String? partnerId = dataStore.getData("partnerId"); // Nullable string
 
-    _listener = _stream.listen((event) => {
-          print("Event: $event"),
-        });
+    print("Partner ID: $partnerId");
+
+    if (partnerId == null) {
+      _stream = supabase
+          .from('expense')
+          .stream(primaryKey: ['id'])
+          .eq('user_id', supabase.auth.currentUser!.id)
+          .order('created_at', ascending: true);
+    } else {
+      _stream = supabase.from('expense').stream(primaryKey: ['id']).inFilter(
+          'user_id', [
+        supabase.auth.currentUser!.id,
+        partnerId!
+      ]).order('created_at', ascending: true);
+    }
 
     _animationController = AnimationController(
       vsync: this,
@@ -133,6 +160,13 @@ class _SugarFundsPageState extends State<SugarFundsPage>
               expenses = snapshot.data!
                   .map((data) => ExpenseData.fromMap(data))
                   .toList();
+
+              _expenses.clear();
+              for (var expense in snapshot.data!) {
+                print("Adding ${expense['amount']}");
+                _expenses.add(expense['amount']);
+              }
+              checkBalance();
             }
 
             expenses.sort((a, b) => b.date.compareTo(a.date));
@@ -156,7 +190,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
               padding: const EdgeInsets.all(16.0),
               child: SugarFundsPageHeader(
                 title: widget.title,
-                balance: widget.balance,
+                balance: dataStore.sugarFundsBalance.value,
                 isExpanded: widget.controller.isExpanded
                     .value, // React to the isExpanded state
               ),
@@ -235,8 +269,10 @@ class _SugarFundsPageState extends State<SugarFundsPage>
 
   Widget buildTypeImageContainer(String type) {
     return GestureDetector(
-      onTap: () => widget.controller.updateExpenseType(
-          type), // The onTap callback is triggered when the container is tapped
+      onTap: () => {
+        widget.controller.updateExpenseType(type),
+        Notifier.show("Selected expense type: $type", 1),
+      }, // The onTap callback is triggered when the container is tapped
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -286,9 +322,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
         ),
         SizedBox(height: getHeightPercentage(context, 1.5)),
         Text(
-          widget.controller.expenseAmount.value == ""
-              ? "0.00"
-              : widget.controller.expenseAmount.value,
+          widget.controller.expenseAmount.value.toString(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 36,
@@ -306,7 +340,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
               icon: const Icon(Icons.check_box, color: Colors.white, size: 50),
               onPressed: () async {
                 final response =
-                    await addExpense(widget.controller.getExpense());
+                    await addExpense(widget.controller.getNewExpenseData());
                 print('Response: $response');
                 if (response['success']) {
                   widget.controller.toggleExpanded();

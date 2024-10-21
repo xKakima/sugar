@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:sugar/controller/sugar_funds_page_controller.dart';
 import 'package:sugar/widgets/buttons/back_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class SugarFundsPageHeader extends StatelessWidget {
   final String title;
-  final String balance;
+  final double balance;
   final bool isExpanded;
   final SugarFundsPageController controller =
       Get.put(SugarFundsPageController());
@@ -85,7 +85,7 @@ class SugarFundsPageHeader extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    balance,
+                    balance.toString(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,

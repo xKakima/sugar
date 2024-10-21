@@ -6,10 +6,8 @@ import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/role_selection_page.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 import 'package:sugar/controller/data_store_controller.dart';
-import 'package:sugar/pages/invite_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PartnerCodePage extends StatefulWidget {
   const PartnerCodePage({super.key});
@@ -19,8 +17,6 @@ class PartnerCodePage extends StatefulWidget {
 }
 
 class _PartnerCodePageState extends State<PartnerCodePage> {
-  final supabase = Supabase.instance.client;
-
   final TextEditingController _partnerCodeController = TextEditingController();
   final FocusNode _focusNode = FocusNode(); // Create a FocusNode
   String _previousText = ''; // Store the previous text to detect paste events
@@ -78,7 +74,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
       dataStore.setData("partnerCode", code);
 
       final balance = await fetchBudget(partnerId);
-      dataStore.setData("sweetFundsBalance", balance);
+      dataStore.setData("sugarFundsBalance", balance);
       final userData = await fetchUserData();
       dataStore.setData("userType", userData['user_type'].toString());
       print("Budget: $balance");

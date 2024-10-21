@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 import 'package:sugar/widgets/numpad.dart';
 
 class MonthlyBudgetUI extends StatelessWidget {
-  final String value;
-  final Function(String) onValueChanged;
+  final double value;
+  final Function(double) onValueChanged;
   final VoidCallback onConfirm;
 
   const MonthlyBudgetUI({
@@ -67,7 +67,7 @@ class MonthlyBudgetUI extends StatelessWidget {
               width: getWidthPercentage(context, 5),
             ),
             Text(
-              value,
+              convertAndFormatToString(value),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 36,

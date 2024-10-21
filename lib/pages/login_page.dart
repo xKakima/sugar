@@ -10,11 +10,10 @@ import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sugar/utils/constants.dart';
 
-final supabase = Supabase.instance.client;
-
-Future<void> _nativeGoogleSignIn(
-    BuildContext context, VoidCallback callback) async {
+Future<void> _nativeGoogleSignIn(BuildContext context) async {
+  late bool isAlreadySignedIn = false;
   const webClientId =
       "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com";
 
@@ -58,7 +57,7 @@ Future<void> _nativeGoogleSignIn(
     }
 
     if (userData['fcm_token'] != null) {
-      late String balance;
+      late double balance;
       if (userData['partner_id'] != null) {
         dataStore.setData("partnerId", userData['partner_id']);
         balance = await fetchBudget(userData['partner_id']);
@@ -66,21 +65,24 @@ Future<void> _nativeGoogleSignIn(
         balance = await fetchBudget(null);
       }
 
-      dataStore.setData("sweetFundsBalance", balance);
-      Get.to(() => HomePage());
-      return;
+      dataStore.sugarFundsBalance.value = balance;
+      isAlreadySignedIn = true;
     }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("googleIdToken", idToken);
+    await prefs.setString("googleAccessToken", accessToken);
+    await prefs.setBool('isLoggedIn', true);
 
     Notifier.show(
       "Welcome, ${supabase.auth.currentUser!.userMetadata?["name"]}!",
       3,
     );
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("googleIdToken", idToken);
-    await prefs.setString("googleAccessToken", accessToken);
-    await prefs.setBool('isLoggedIn', true);
-    callback();
+    if (isAlreadySignedIn) {
+      Get.to(() => HomePage());
+    } else {
+      Get.to(() => PartnerCodePage());
+    }
   } catch (error) {
     print("Sign-in failed: $error");
     if (context.mounted) {
@@ -120,8 +122,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   SizedBox(height: buttonTopPadding), // Space above the button
                   GestureDetector(
-                    onTap: () => _nativeGoogleSignIn(
-                        context, () => Get.to(() => PartnerCodePage())),
+                    onTap: () => _nativeGoogleSignIn(context),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       child: Image.asset(

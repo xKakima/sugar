@@ -11,8 +11,9 @@ import 'package:sugar/widgets/balance_box.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/plus_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sugar/utils/constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,9 +23,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final supabase = Supabase.instance.client;
   final dataStore = Get.find<DataStoreController>();
-  late String sweetFundsBalance = dataStore.getData("sweetFundsBalance") ?? '0';
+  late double sugarFundsBalance = dataStore.sugarFundsBalance.value;
   late String welcomeText =
       dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
 
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       return [
         BalanceBox(
           title: getBalanceBoxTitle(true),
-          amount: '0',
+          amount: 0,
           onTap: () => Get.to(() => AccountPage(
                 title: getBalanceBoxTitle(true),
                 headerColor: getBalanceBoxColor(true),
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         BalanceBox(
           title: '',
-          amount: '600,000',
+          amount: 600000,
           onTap: () => Get.to(() =>
               AccountPage(title: '', headerColor: getBalanceBoxColor(false))),
           color: getBalanceBoxColor(false),
@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     return [
       BalanceBox(
         title: getBalanceBoxTitle(true),
-        amount: '0',
+        amount: 0,
         onTap: () => Get.to(() => AccountPage(
             title: getBalanceBoxTitle(true),
             headerColor: getBalanceBoxColor(true))),
@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
       const SizedBox(height: 8),
       BalanceBox(
         title: getBalanceBoxTitle(false),
-        amount: '600,000',
+        amount: 600000,
         onTap: () => Get.to(
             () => AccountPage(
                   title: getBalanceBoxTitle(false),
@@ -195,17 +195,16 @@ class _HomePageState extends State<HomePage> {
                     ),
 
                     // Balance Box for Sweet Funds
-                    BalanceBox(
+                    Obx(() => BalanceBox(
                         title: 'sugar funds',
-                        amount: sweetFundsBalance,
+                        amount: dataStore.sugarFundsBalance.value,
                         onTap: () => Get.to(
                               () => SugarFundsPage(
                                   title: 'sugar funds',
                                   headerColor:
-                                      AppColors.sugarFundsBalance.color,
-                                  balance: sweetFundsBalance),
+                                      AppColors.sugarFundsBalance.color),
                             ),
-                        color: AppColors.sugarFundsFullBalance.color),
+                        color: AppColors.sugarFundsFullBalance.color)),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
                       child: const Text(

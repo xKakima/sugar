@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:sugar/controller/account_page_controller.dart';
 import 'package:sugar/widgets/buttons/back_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class AccountPageHeader extends StatelessWidget {
   final String title;

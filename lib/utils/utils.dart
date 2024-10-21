@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sugar/utils/constants.dart';
 
 double getWidthPercentage(BuildContext context, double percentage) {
   final screenWidth = MediaQuery.of(context).size.width;
@@ -44,24 +45,30 @@ int convertStringToInt(String value) {
   return int.parse(value.replaceAll(',', ''));
 }
 
-String formatWithCommas(String value) {
-  // Remove any non-numeric characters, including commas
-  String cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
+String convertAndFormatToString(double value) {
+  // Remove any non-numeric characters, except for the decimal point
+  String cleanValue = value.toString().replaceAll(RegExp(r'[^\d.]'), '');
 
-  // Limit the length to 9 digits
-  if (cleanValue.length > 9) {
-    cleanValue = '999999999'; // Set to maximum value if exceeded
+  // Parse the value as a double, and handle possible errors
+  double parsedValue = double.tryParse(cleanValue) ?? 0.0;
+
+  // If the value has more than two decimal places, limit it to two
+  parsedValue = double.parse(parsedValue.toStringAsFixed(2));
+
+  // Limit the value to 9 digits before the decimal point
+  if (parsedValue >= 1000000000) {
+    parsedValue = 999999999.99; // Cap the value at 999,999,999.99
   }
 
-  // Use intl NumberFormat to format the string
-  final NumberFormat formatter = NumberFormat.decimalPattern();
-  String formattedValue = formatter.format(int.parse(cleanValue));
+  // Use intl NumberFormat to format the number with commas and two decimal places
+  final NumberFormat formatter = NumberFormat('#,##0.00');
+  String formattedValue = formatter.format(parsedValue);
 
   return formattedValue;
 }
 
-int formatInteger(String value) {
-  return int.parse(value.replaceAll(',', ''));
+double formatNumber(String value) {
+  return double.parse(value.replaceAll(',', ''));
 }
 
 String getDaySuffix(int day) {
@@ -86,7 +93,6 @@ String formattedDate({DateTime? date}) {
 }
 
 Future<void> logout() async {
-  final supabase = Supabase.instance.client;
   final prefs = await SharedPreferences.getInstance();
   await prefs.clear(); // Clears all stored user data
 

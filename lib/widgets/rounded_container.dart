@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/constants/app_colors.dart';
-import 'package:sugar/widgets/utils.dart';
+import 'package:sugar/utils/utils.dart';
 
 class RoundedContainer extends StatelessWidget {
   final Widget child;
