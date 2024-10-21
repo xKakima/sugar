@@ -62,6 +62,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () => Get.to(() => AccountPage(
                 title: getBalanceBoxTitle(true),
                 headerColor: getBalanceBoxColor(true),
+                userId: supabase.auth.currentUser!.id,
               )),
           color: getBalanceBoxColor(true),
         ),
@@ -69,8 +70,7 @@ class _HomePageState extends State<HomePage> {
         BalanceBox(
           title: '',
           amount: '600000',
-          onTap: () => Get.to(() =>
-              AccountPage(title: '', headerColor: getBalanceBoxColor(false))),
+          onTap: () => {},
           color: getBalanceBoxColor(false),
           hasNoLink: true,
         ),
@@ -84,7 +84,8 @@ class _HomePageState extends State<HomePage> {
         amount: '0',
         onTap: () => Get.to(() => AccountPage(
             title: getBalanceBoxTitle(true),
-            headerColor: getBalanceBoxColor(true))),
+            headerColor: getBalanceBoxColor(true),
+            userId: supabase.auth.currentUser!.id)),
         color: getBalanceBoxColor(true),
       ),
       const SizedBox(height: 8),
@@ -95,6 +96,7 @@ class _HomePageState extends State<HomePage> {
             () => AccountPage(
                   title: getBalanceBoxTitle(false),
                   headerColor: getBalanceBoxColor(false),
+                  userId: dataStore.getData("partnerId"),
                 ),
             transition: Transition.upToDown),
         color: getBalanceBoxColor(false),

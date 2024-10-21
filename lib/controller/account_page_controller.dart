@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:get/get.dart';
+import 'package:sugar/constants/app_colors.dart';
 import 'package:sugar/widgets/account_box.dart';
 
 class AccountPageController extends GetxController {
@@ -10,6 +13,10 @@ class AccountPageController extends GetxController {
     // accountNumber: Colors.red,
     onTap: () {},
   ).obs;
+
+  Rx<Color> headerColor = AppColors.accountBoxDefault.color.obs;
+
+  RxBool hideBodyData = false.obs;
 
   // Toggle the expanded state
   void toggleExpanded() {

@@ -1,48 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:sugar/utils/utils.dart';
 
-class AccountBox extends StatelessWidget {
-  final String accountName;
-  final String amount;
-  // final String accountNumber;
+class AccountData extends StatelessWidget {
+  final String id;
+  final String name;
+  final String balance;
   final VoidCallback onTap;
-  final bool isEmpty;
 
-  const AccountBox(
+  const AccountData(
       {super.key,
-      required this.accountName,
-      required this.amount,
-      // required this.accountNumber,
-      required this.onTap,
-      this.isEmpty = false});
+      required this.id,
+      required this.name,
+      required this.balance,
+      required this.onTap});
 
+  factory AccountData.fromMap(Map<String, dynamic> data) {
+    print("Parsing Data ${data}");
+    return AccountData(
+      id: data['id'] ?? 'Unknown ID', // Provide a default value if null
+      name: data['name'] ?? 'Unknown Name', // Default to 'Unknown Name'
+      balance: (data['amount'] as num?)?.toStringAsFixed(2) ?? '0.00',
+      onTap: () => print("Account tapped"),
+    );
+  }
   @override
   Widget build(BuildContext context) {
-    return isEmpty ? _buildEmptyAccountBox() : _buildAccountBox();
-  }
-
-  Widget _buildEmptyAccountBox() {
-    return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color.fromARGB(37, 59, 59, 59),
-          // Adjust the corner radius for a more rounded look
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Align(
-          alignment: Alignment.center,
-          child: Text(
-            'add a new account',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ));
-  }
-
-  Widget _buildAccountBox() {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -57,7 +39,7 @@ class AccountBox extends StatelessWidget {
           children: [
             // Account Name
             Text(
-              accountName,
+              name,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -77,7 +59,7 @@ class AccountBox extends StatelessWidget {
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  amount,
+                  formatStringWithCommas(balance),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,

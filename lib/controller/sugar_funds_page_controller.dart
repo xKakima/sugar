@@ -1,18 +1,9 @@
 import 'package:get/get.dart';
-import 'package:sugar/utils/utils.dart';
-import 'package:sugar/widgets/account_box.dart';
 
 class SugarFundsPageController extends GetxController {
   RxBool isExpanded = false.obs;
   RxBool isExpenseSummed = false.obs;
   RxString sugarFundsAmount = "".obs;
-
-  Rx<AccountBox> accountBoxModifying = AccountBox(
-    accountName: "sugar daddy balance",
-    amount: "0",
-    // accountNumber: Colors.red,
-    onTap: () {},
-  ).obs;
 
   RxBool hideBodyData = false.obs;
 

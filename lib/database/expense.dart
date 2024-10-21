@@ -1,5 +1,5 @@
 import 'package:sugar/utils/constants.dart';
-import 'package:sugar/widgets/expense_data.dart';
+import 'package:sugar/models/expense_data.dart';
 import 'package:sugar/utils/utils.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

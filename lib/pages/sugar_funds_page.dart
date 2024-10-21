@@ -5,7 +5,7 @@ import 'package:sugar/controller/sugar_funds_page_controller.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/expense.dart';
 import 'package:sugar/utils/constants.dart';
-import 'package:sugar/widgets/expense_data.dart';
+import 'package:sugar/models/expense_data.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/numpad.dart';
 import 'package:sugar/widgets/plus_button.dart';
