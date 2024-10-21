@@ -51,38 +51,20 @@ class SugarFundsPage extends StatefulWidget {
 class _SugarFundsPageState extends State<SugarFundsPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late List<double> _expenses = [];
-  // ignore: prefer_typing_uninitialized_variables
   late final _stream;
 
-  void checkBalance() async {
-    final response = await fetchBudgetData(dataStore.getData('partnerId'));
-    print("Response: $response");
-    if (response?['balance'] == response?['budget'] && _expenses.isNotEmpty) {
-      double totalExpenses = _expenses.reduce((a, b) => a + b);
-      print("Total Expenses: $totalExpenses");
-      double deductedBalance = response?['balance'] - totalExpenses;
-      print("Deducted Balance: $deductedBalance");
-      dataStore.sugarFundsBalance.value = deductedBalance;
-
-      final budgetOwner = dataStore.getData('budgetOwner');
-      print("budget owner: $budgetOwner");
-      print("Upserting ${{'balance': deductedBalance}}");
-      if (budgetOwner == 'user') {
-        await updateBudget({'balance': deductedBalance}, ownerIsUser: true);
-      } else {
-        await updateBudget({'balance': deductedBalance});
-      }
+  void fetchBalance() async {
+    String? partnerId = dataStore.getData("partnerId");
+    if (partnerId != null) {
+      dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(partnerId);
     } else {
-      dataStore.sugarFundsBalance.value = response!['balance'];
+      dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(null);
     }
   }
 
   @override
   void initState() {
     super.initState();
-
-    dataStore.sugarFundsBalance.value = dataStore.sugarFundsBalance.value;
 
     String? partnerId = dataStore.getData("partnerId"); // Nullable string
 
@@ -161,12 +143,8 @@ class _SugarFundsPageState extends State<SugarFundsPage>
                   .map((data) => ExpenseData.fromMap(data))
                   .toList();
 
-              _expenses.clear();
-              for (var expense in snapshot.data!) {
-                print("Adding ${expense['amount']}");
-                _expenses.add(expense['amount']);
-              }
-              checkBalance();
+              print("fetching balance");
+              fetchBalance();
             }
 
             expenses.sort((a, b) => b.date.compareTo(a.date));
@@ -322,7 +300,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
         ),
         SizedBox(height: getHeightPercentage(context, 1.5)),
         Text(
-          widget.controller.expenseAmount.value.toString(),
+          widget.controller.expenseAmount.value,
           style: TextStyle(
             color: Colors.white,
             fontSize: 36,
@@ -343,6 +321,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
                     await addExpense(widget.controller.getNewExpenseData());
                 print('Response: $response');
                 if (response['success']) {
+                  widget.controller.isExpenseSummed.value = true;
                   widget.controller.toggleExpanded();
                 } else {
                   Notifier.show("Failed to add expense, kindly try again", 3);

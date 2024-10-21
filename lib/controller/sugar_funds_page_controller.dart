@@ -4,7 +4,8 @@ import 'package:sugar/widgets/account_box.dart';
 
 class SugarFundsPageController extends GetxController {
   RxBool isExpanded = false.obs;
-  RxDouble sugarFundsAmount = 0.0.obs;
+  RxBool isExpenseSummed = false.obs;
+  RxString sugarFundsAmount = "".obs;
 
   Rx<AccountBox> accountBoxModifying = AccountBox(
     accountName: "sugar daddy balance",
@@ -15,7 +16,7 @@ class SugarFundsPageController extends GetxController {
 
   RxBool hideBodyData = false.obs;
 
-  RxDouble expenseAmount = 0.0.obs;
+  RxString expenseAmount = "0".obs;
   RxString expenseType = "".obs;
 
   // Toggle the expanded state
@@ -24,7 +25,7 @@ class SugarFundsPageController extends GetxController {
     isExpanded.value = !isExpanded.value;
   }
 
-  void updateSugarFundsAmount(double amount) {
+  void updateSugarFundsAmount(String amount) {
     sugarFundsAmount.value = amount;
   }
 
@@ -36,7 +37,7 @@ class SugarFundsPageController extends GetxController {
     return hideBodyData.value;
   }
 
-  void updateExpenseAmount(double amount) {
+  void updateExpenseAmount(String amount) {
     expenseAmount.value = amount;
     print("New expense amount: $amount");
   }
@@ -50,7 +51,7 @@ class SugarFundsPageController extends GetxController {
     var amount = expenseAmount.value;
     var type = expenseType.value;
 
-    expenseAmount.value = 0.0;
+    expenseAmount.value = "";
     expenseType.value = "";
 
     return {

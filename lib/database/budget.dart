@@ -50,7 +50,7 @@ Future<Map<String, dynamic>> updateBudget(Map<String, dynamic> budgetData,
   }
 }
 
-Future<double> fetchBudget(String? partnerId) async {
+Future<String> fetchMonthlyBalance(String? partnerId) async {
   late PostgrestList budget;
 
   // If partnerId is null, only filter by the current user's ID
@@ -76,10 +76,10 @@ Future<double> fetchBudget(String? partnerId) async {
 
   // Check if there are results and return the formatted budget
   if (budget.isNotEmpty) {
-    return budget[0]['balance'];
+    return formatStringWithCommas(budget[0]['balance'].toString());
   } else {
     // If no balance is found, return a default value (like '0')
-    return 0;
+    return '0';
   }
 }
 
@@ -93,6 +93,7 @@ Future<PostgrestMap?> fetchBudgetData(String? partnerId) async {
         .select('*')
         .eq('user_id', supabase.auth.currentUser!.id)
         .single();
+    print("Budget from user ${budget}");
   } else {
     // If partnerId is not null, filter by both user_id and partner_id
     budget = await supabase

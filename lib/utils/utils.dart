@@ -45,6 +45,17 @@ int convertStringToInt(String value) {
   return int.parse(value.replaceAll(',', ''));
 }
 
+String sanitizeDouble(double value) {
+  // Check if the double has decimals
+  if (value == value.toInt()) {
+    // If the double has no decimal part, return it as an integer
+    return value.toInt().toString();
+  } else {
+    // Otherwise, convert it to a string with the necessary precision
+    return value.toStringAsFixed(2).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
+  }
+}
+
 String convertAndFormatToString(double value) {
   // Remove any non-numeric characters, except for the decimal point
   String cleanValue = value.toString().replaceAll(RegExp(r'[^\d.]'), '');
@@ -65,6 +76,45 @@ String convertAndFormatToString(double value) {
   String formattedValue = formatter.format(parsedValue);
 
   return formattedValue;
+}
+
+String formatStringWithCommas(String value) {
+  // First, check if the value contains a decimal point
+  if (value.contains('.')) {
+    // Split the value into integer and decimal parts
+    List<String> parts = value.split('.');
+    String integerPart = parts[0].replaceAll(RegExp(r'[^\d]'), '');
+    String decimalPart = parts[1]; // Keep the decimal part as it is
+
+    // Format the integer part with commas
+    final NumberFormat formatter = NumberFormat.decimalPattern();
+    String formattedIntegerPart = formatter.format(int.parse(integerPart));
+
+    // Return the formatted integer part and the decimal part combined
+    return '$formattedIntegerPart.$decimalPart';
+  } else {
+    // If there's no decimal point, handle the value as an integer
+    String cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (cleanValue.length > 9) {
+      cleanValue = '999999999'; // Set to maximum value if exceeded
+    }
+
+    final NumberFormat formatter = NumberFormat.decimalPattern();
+    String formattedValue = formatter.format(int.parse(cleanValue));
+    return formattedValue;
+  }
+}
+
+String deductValues(String value1, String value2) {
+  double val1 = formatNumber(value1);
+  print("Value 1: $val1");
+  double val2 = formatNumber(value2);
+  print("Value 2: $val2");
+
+  double result = val1 - val2;
+  print("Result: $result");
+  return convertAndFormatToString(result);
 }
 
 double formatNumber(String value) {

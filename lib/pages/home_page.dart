@@ -24,7 +24,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final dataStore = Get.find<DataStoreController>();
-  late double sugarFundsBalance = dataStore.sugarFundsBalance.value;
+  late String sugarFundsBalance = dataStore.sugarFundsBalance.value;
   late String welcomeText =
       dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
 
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       return [
         BalanceBox(
           title: getBalanceBoxTitle(true),
-          amount: 0,
+          amount: '0',
           onTap: () => Get.to(() => AccountPage(
                 title: getBalanceBoxTitle(true),
                 headerColor: getBalanceBoxColor(true),
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         BalanceBox(
           title: '',
-          amount: 600000,
+          amount: '600000',
           onTap: () => Get.to(() =>
               AccountPage(title: '', headerColor: getBalanceBoxColor(false))),
           color: getBalanceBoxColor(false),
@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     return [
       BalanceBox(
         title: getBalanceBoxTitle(true),
-        amount: 0,
+        amount: '0',
         onTap: () => Get.to(() => AccountPage(
             title: getBalanceBoxTitle(true),
             headerColor: getBalanceBoxColor(true))),
@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
       const SizedBox(height: 8),
       BalanceBox(
         title: getBalanceBoxTitle(false),
-        amount: 600000,
+        amount: '600000',
         onTap: () => Get.to(
             () => AccountPage(
                   title: getBalanceBoxTitle(false),

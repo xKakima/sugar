@@ -17,7 +17,7 @@ class MonthlyBudget extends StatefulWidget {
 
 class _MonthlyBudgetState extends State<MonthlyBudget> {
   final dataStore = Get.find<DataStoreController>();
-  double value = 0;
+  String value = '0';
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _MonthlyBudgetState extends State<MonthlyBudget> {
     dataStore.setData("monthlyBudgetSelected", false);
   }
 
-  void _updateValue(double newValue) {
+  void _updateValue(String newValue) {
     value = newValue;
   }
 

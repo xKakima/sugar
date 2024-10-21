@@ -73,7 +73,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
       Notifier.show("Partner code added successfully!", 3);
       dataStore.setData("partnerCode", code);
 
-      final balance = await fetchBudget(partnerId);
+      final balance = await fetchMonthlyBalance(partnerId);
       dataStore.setData("sugarFundsBalance", balance);
       final userData = await fetchUserData();
       dataStore.setData("userType", userData['user_type'].toString());

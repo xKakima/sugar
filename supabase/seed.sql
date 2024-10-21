@@ -96,6 +96,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION sugar.update_budget_balance()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the user_id in the expense matches either the user_id or partner_id in the monthly_budget table
+    UPDATE sugar.monthly_budget
+    SET balance = balance - NEW.amount, -- Deduct the expense amount from the balance
+        updated_at = NOW() -- Update the updated_at timestamp
+    WHERE (user_id = NEW.user_id OR partner_id = NEW.user_id);
+
+    -- Ensure the balance is never negative
+    UPDATE sugar.monthly_budget
+    SET balance = 0
+    WHERE balance < 0;
+
+    RETURN NEW; -- Return the new record for insertion
+END;
+$$ LANGUAGE plpgsql;
+
 DO $$ 
 DECLARE
     rec RECORD;
@@ -125,6 +143,14 @@ CREATE TRIGGER set_balance
 BEFORE INSERT ON sugar.monthly_budget
 FOR EACH ROW
 EXECUTE FUNCTION sugar.set_monthly_budget_balance();
+
+
+CREATE TRIGGER update_budget_balance_trigger
+AFTER INSERT ON sugar.expense
+FOR EACH ROW
+EXECUTE FUNCTION sugar.update_budget_balance();
+
+-- Create callable functions through rpc
 
 CREATE OR REPLACE FUNCTION sugar.check_reset_day() 
 RETURNS VOID AS $$

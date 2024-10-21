@@ -7,7 +7,7 @@ import 'package:sugar/utils/utils.dart';
 
 class SugarFundsPageHeader extends StatelessWidget {
   final String title;
-  final double balance;
+  final String balance;
   final bool isExpanded;
   final SugarFundsPageController controller =
       Get.put(SugarFundsPageController());
@@ -32,7 +32,10 @@ class SugarFundsPageHeader extends StatelessWidget {
               children: [
                 if (isExpanded)
                   CustomBackButton(
-                    onPressed: () => controller.toggleExpanded(),
+                    onPressed: () => {
+                      controller.toggleExpanded(),
+                      controller.expenseAmount.value = "0"
+                    },
                   )
                 else
                   const CustomBackButton(),

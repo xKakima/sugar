@@ -5,7 +5,7 @@ import 'package:sugar/utils/utils.dart';
 
 class BalanceBox extends StatefulWidget {
   final String title;
-  final double amount;
+  final String amount;
   final VoidCallback onTap;
   final Color color;
   final bool hasNoLink;
@@ -124,7 +124,7 @@ class _BalanceBoxState extends State<BalanceBox> {
               Text(
                 _isHidden
                     ? '••••••'
-                    : 'PHP ${convertAndFormatToString(widget.amount)}',
+                    : 'PHP ${formatStringWithCommas(widget.amount)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24, // Smaller font size for amount

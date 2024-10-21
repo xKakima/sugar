@@ -24,7 +24,7 @@ class AccountPage extends StatefulWidget {
         amount: '450,000',
         // accountNumber: '5283 2548 4700 2489',
         onTap: () => {
-          controller.updateAccountAmount(100000),
+          controller.updateAccountAmount('100,000'),
           controller.toggleExpanded(),
           // controller.updateAccountBox(this)
           // nvm should be in database
@@ -35,7 +35,7 @@ class AccountPage extends StatefulWidget {
         amount: '97,000',
         // accountNumber: '5283 2548 4700 2489',
         onTap: () => {
-          controller.updateAccountAmount(100000),
+          controller.updateAccountAmount('100,000'),
           controller.toggleExpanded()
         },
       ),

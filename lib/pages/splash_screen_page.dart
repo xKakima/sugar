@@ -103,12 +103,12 @@ class _SplashScreenState extends State<SplashScreen> {
           return;
         }
 
-        late double balance;
+        late String balance;
         if (userData['partner_id'] != null) {
           dataStore.setData("partnerId", userData['partner_id']);
-          balance = await fetchBudget(userData['partner_id']);
+          balance = await fetchMonthlyBalance(userData['partner_id']);
         } else {
-          balance = await fetchBudget(null);
+          balance = await fetchMonthlyBalance(null);
         }
 
         dataStore.sugarFundsBalance.value = balance;
