@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
 import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/database/account.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/account_page.dart';
 import 'package:sugar/pages/sugar_funds_page.dart';
@@ -23,12 +24,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final dataStore = Get.find<DataStoreController>();
+  List<Widget> balanceBoxWidgets = [];
+
   late String sugarFundsBalance = dataStore.sugarFundsBalance.value;
   late String welcomeText =
       dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
 
   late bool hasPartner = dataStore.getData("partnerId") != null ? true : false;
+
+  late String partnerRole =
+      dataStore.getData("userType") == "DADDY" ? "BABY" : "DADDY";
 
   String getBalanceBoxTitle(bool isUsersAccount) {
     if (isUsersAccount) {
@@ -41,67 +46,93 @@ class _HomePageState extends State<HomePage> {
         : "sugar daddy balance";
   }
 
-  Color getBalanceBoxColor(bool isUsersAccount) {
+  String getBalanceBoxColor(bool isUsersAccount) {
     if (isUsersAccount) {
       return dataStore.getData("userType") == "DADDY"
-          ? AppColors.sugarDaddyBalance.color
-          : AppColors.sugarBabyBalance.color;
+          ? AppColors.sugarDaddyBalance.name
+          : AppColors.sugarBabyBalance.name;
     }
     return dataStore.getData("userType") == "DADDY"
-        ? AppColors.sugarBabyBalance.color
-        : AppColors.sugarDaddyBalance.color;
+        ? AppColors.sugarBabyBalance.name
+        : AppColors.sugarDaddyBalance.name;
   }
 
-  List<dynamic> balanceBoxes() {
-    print("Has Partner: $hasPartner");
+  Future<double> getAccountBalanceTotal(bool isUserAccount) async {
+    final response = await fetchAccountsTotal(isUserAccount);
+
+    print(response);
+    return response;
+  }
+
+  Future<List<Widget>> balanceBoxes() async {
     if (!hasPartner) {
       return [
         BalanceBox(
           title: getBalanceBoxTitle(true),
-          amount: '0',
-          onTap: () => Get.to(() => AccountPage(
+          amount: convertAndFormatToString(await getAccountBalanceTotal(true)),
+          onTap: () async {
+            await Get.to(
+              () => AccountPage(
                 title: getBalanceBoxTitle(true),
                 headerColor: getBalanceBoxColor(true),
                 userId: supabase.auth.currentUser!.id,
-              )),
+                isUserAccount: true,
+              ),
+              transition: Transition.upToDown,
+            );
+            await _refreshBalance(); // Refresh on return
+          },
           color: getBalanceBoxColor(true),
         ),
         const SizedBox(height: 8),
         BalanceBox(
           title: '',
-          amount: '600000',
+          amount: '0',
           onTap: () => {},
           color: getBalanceBoxColor(false),
           hasNoLink: true,
         ),
-        const SizedBox(height: 16)
+        const SizedBox(height: 16),
       ];
     }
 
     return [
       BalanceBox(
         title: getBalanceBoxTitle(true),
-        amount: '0',
-        onTap: () => Get.to(() => AccountPage(
-            title: getBalanceBoxTitle(true),
-            headerColor: getBalanceBoxColor(true),
-            userId: supabase.auth.currentUser!.id)),
+        amount: convertAndFormatToString(await getAccountBalanceTotal(true)),
+        onTap: () async {
+          await Get.to(
+            () => AccountPage(
+              title: getBalanceBoxTitle(true),
+              headerColor: getBalanceBoxColor(true),
+              userId: supabase.auth.currentUser!.id,
+              isUserAccount: true,
+            ),
+            transition: Transition.upToDown,
+          );
+          await _refreshBalance(); // Refresh on return
+        },
         color: getBalanceBoxColor(true),
       ),
       const SizedBox(height: 8),
       BalanceBox(
         title: getBalanceBoxTitle(false),
-        amount: '600000',
-        onTap: () => Get.to(
+        amount: convertAndFormatToString(await getAccountBalanceTotal(false)),
+        onTap: () async {
+          await Get.to(
             () => AccountPage(
-                  title: getBalanceBoxTitle(false),
-                  headerColor: getBalanceBoxColor(false),
-                  userId: dataStore.getData("partnerId"),
-                ),
-            transition: Transition.upToDown),
+              title: getBalanceBoxTitle(false),
+              headerColor: getBalanceBoxColor(false),
+              userId: dataStore.getData("partnerId"),
+              isUserAccount: false,
+            ),
+            transition: Transition.upToDown,
+          );
+          await _refreshBalance(); // Refresh on return
+        },
         color: getBalanceBoxColor(false),
       ),
-      const SizedBox(height: 16)
+      const SizedBox(height: 16),
     ];
   }
 
@@ -109,6 +140,16 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _initializeApp();
+    _refreshBalance(); // Initial load only here
+    print(
+        "User Type: ${dataStore.getData("userType")}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+  }
+
+  Future<void> _refreshBalance() async {
+    final boxes = await balanceBoxes();
+    setState(() {
+      balanceBoxWidgets = boxes;
+    });
   }
 
   void _initializeApp() async {
@@ -157,9 +198,8 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Row with Date and Profile Icon
                     SizedBox(
-                      width: double.infinity, // Constrain Row width properly
+                      width: double.infinity,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -174,7 +214,6 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    // Welcome Text
                     Text(
                       welcomeText,
                       style: const TextStyle(
@@ -195,18 +234,17 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-
-                    // Balance Box for Sweet Funds
                     Obx(() => BalanceBox(
-                        title: 'sugar funds',
-                        amount: dataStore.sugarFundsBalance.value,
-                        onTap: () => Get.to(
-                              () => SugarFundsPage(
-                                  title: 'sugar funds',
-                                  headerColor:
-                                      AppColors.sugarFundsBalance.color),
+                          title: 'sugar funds',
+                          amount: dataStore.sugarFundsBalance.value,
+                          onTap: () => Get.to(
+                            () => SugarFundsPage(
+                              title: 'sugar funds',
+                              headerColor: AppColors.sugarFundsBalance.color,
                             ),
-                        color: AppColors.sugarFundsFullBalance.color)),
+                          ),
+                          color: AppColors.sugarFundsFullBalance.name,
+                        )),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
                       child: const Text(
@@ -219,15 +257,19 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Column(
-                      children: [...balanceBoxes()],
+                      children: balanceBoxWidgets,
                     ),
-
                     const Spacer(),
-
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: PlusButton(
-                        onPressed: () => print("ADD Transaction"),
+                        onPressed: () => Get.to(
+                          () => SugarFundsPage(
+                            title: 'sugar funds',
+                            headerColor: AppColors.sugarFundsBalance.color,
+                            fromQuickAddExpense: true,
+                          ),
+                        ),
                       ),
                     ),
                   ],

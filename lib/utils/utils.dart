@@ -79,11 +79,16 @@ String convertAndFormatToString(double value) {
 }
 
 String formatStringWithCommas(String value) {
-  // First, check if the value contains a decimal point
-  if (value.contains('.')) {
-    // Split the value into integer and decimal parts
-    List<String> parts = value.split('.');
-    String integerPart = parts[0].replaceAll(RegExp(r'[^\d]'), '');
+  // Check for negative sign
+  bool isNegative = value.startsWith('-');
+
+  // Remove negative sign for processing
+  String cleanValue = value.replaceAll(RegExp(r'[^\d.]'), '');
+
+  // Split the value into integer and decimal parts if it contains a decimal point
+  if (cleanValue.contains('.')) {
+    List<String> parts = cleanValue.split('.');
+    String integerPart = parts[0];
     String decimalPart = parts[1]; // Keep the decimal part as it is
 
     // Format the integer part with commas
@@ -91,18 +96,16 @@ String formatStringWithCommas(String value) {
     String formattedIntegerPart = formatter.format(int.parse(integerPart));
 
     // Return the formatted integer part and the decimal part combined
-    return '$formattedIntegerPart.$decimalPart';
+    return '${isNegative ? '-' : ''}$formattedIntegerPart.$decimalPart';
   } else {
-    // If there's no decimal point, handle the value as an integer
-    String cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
-
+    // Handle the value as an integer
     if (cleanValue.length > 9) {
       cleanValue = '999999999'; // Set to maximum value if exceeded
     }
 
     final NumberFormat formatter = NumberFormat.decimalPattern();
     String formattedValue = formatter.format(int.parse(cleanValue));
-    return formattedValue;
+    return '${isNegative ? '-' : ''}$formattedValue';
   }
 }
 

@@ -18,7 +18,6 @@ class PartnerCodePage extends StatefulWidget {
 
 class _PartnerCodePageState extends State<PartnerCodePage> {
   final TextEditingController _partnerCodeController = TextEditingController();
-  final FocusNode _focusNode = FocusNode(); // Create a FocusNode
   String _previousText = ''; // Store the previous text to detect paste events
   final dataStore = Get.find<DataStoreController>();
   bool _hasCheckedPartnerCode = false;
@@ -38,15 +37,6 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
 
       // Update the previous text
       _previousText = currentText;
-    });
-
-    // Add listener to the FocusNode to detect focus changes
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        print("TextField is focused (clicked).");
-      } else {
-        print("TextField lost focus (closed).");
-      }
     });
   }
 

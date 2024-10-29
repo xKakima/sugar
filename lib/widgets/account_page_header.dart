@@ -32,8 +32,19 @@ class AccountPageHeader extends StatelessWidget {
                 // If widget.isExpanded CustomBackButton(() => controller.toggleExpand())
                 if (isExpanded)
                   CustomBackButton(
-                    onPressed: () => controller.toggleExpanded(),
-                  )
+                      onPressed: () => {
+                            if (controller.editingState.value ==
+                                EditingState.editAccount)
+                              {
+                                controller.editingState.value =
+                                    EditingState.editAmount
+                              }
+                            else
+                              {
+                                controller.setBackToMainTitle(),
+                                controller.toggleExpanded()
+                              }
+                          })
                 else
                   const CustomBackButton(),
                 const SizedBox(width: 4),

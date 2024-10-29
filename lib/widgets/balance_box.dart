@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sugar/constants/app_colors.dart';
 import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/utils/utils.dart';
 
@@ -7,7 +8,7 @@ class BalanceBox extends StatefulWidget {
   final String title;
   final String amount;
   final VoidCallback onTap;
-  final Color color;
+  final String color;
   final bool hasNoLink;
 
   const BalanceBox({
@@ -87,7 +88,7 @@ class _BalanceBoxState extends State<BalanceBox> {
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: widget.color,
+        color: AppColorExtension.fromName(widget.color),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

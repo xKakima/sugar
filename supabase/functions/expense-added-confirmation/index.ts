@@ -23,17 +23,29 @@ const supabase = createClient(
 );
 
 Deno.serve(async (req) => {
-  const payload: WebhookPayload = await req.json();
+  const payload = await req.json();
   console.log("payload", payload);
-  const { data } = await supabase.from("user_data").select("fcm_token")
+  const { data: userData } = await supabase.from("user_data").select(
+    "partner_id, user_type",
+  )
     .eq(
       "user_id",
       payload.record.user_id,
     ).single();
 
-  console.log("data", data);
+  console.log("data", userData);
 
-  const fcmToken = data!.fcm_token as string;
+  if (!userData!.partner_id) {
+    return new Response(JSON.stringify(userData), {
+      headers: { "content-type": "application/json" },
+    });
+  }
+  const { data: partnerData } = await supabase.from("user_data").select(
+    "fcm_token",
+  )
+    .eq("user_id", userData!.partner_id).single();
+
+  const fcmToken = partnerData!.fcm_token as string;
   const { default: serviceAccount } = await import(
     "../service-account.json",
     { with: { type: "json" } }
@@ -44,6 +56,10 @@ Deno.serve(async (req) => {
     privateKey: serviceAccount.private_key,
   });
 
+  const item = payload.record.expense_type
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
   const res = await fetch(
     `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
     {
@@ -56,9 +72,10 @@ Deno.serve(async (req) => {
         message: {
           token: fcmToken,
           notification: {
-            title: "Your partner has added an expense",
-            body:
-              `They spent ${payload.record.amount} on ${payload.record.expense_type}`,
+            title: `Your ${
+              userData!.user_type.toLowerCase()
+            } has added an expense`,
+            body: `They spent PHP ${payload.record.amount} on ${item}`,
           },
         },
       }),
@@ -70,7 +87,7 @@ Deno.serve(async (req) => {
     throw resData;
   }
 
-  return new Response(JSON.stringify(data), {
+  return new Response(JSON.stringify(partnerData), {
     headers: { "content-type": "application/json" },
   });
 });

@@ -16,8 +16,13 @@ import 'package:sugar/utils/utils.dart';
 class SugarFundsPage extends StatefulWidget {
   final String title;
   final Color headerColor;
+  final bool fromQuickAddExpense;
 
-  SugarFundsPage({super.key, required this.title, required this.headerColor});
+  SugarFundsPage(
+      {super.key,
+      required this.title,
+      required this.headerColor,
+      this.fromQuickAddExpense = false});
 
   final SugarFundsPageController controller =
       Get.put(SugarFundsPageController());
@@ -60,6 +65,11 @@ class _SugarFundsPageState extends State<SugarFundsPage>
     } else {
       dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(null);
     }
+  }
+
+  void addExpenseState() {
+    widget.controller.setBodyData(true);
+    widget.controller.toggleExpanded();
   }
 
   @override
@@ -111,6 +121,10 @@ class _SugarFundsPageState extends State<SugarFundsPage>
         _animationController.reverse();
       }
     });
+
+    if (widget.fromQuickAddExpense) {
+      addExpenseState();
+    }
   }
 
   @override
@@ -236,8 +250,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
           right: 0,
           child: PlusButton(
             onPressed: () => {
-              widget.controller.setBodyData(true),
-              widget.controller.toggleExpanded()
+              addExpenseState(),
             },
           ),
         ),

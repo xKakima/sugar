@@ -20,3 +20,48 @@ enum AppColors {
 
   const AppColors(this.color);
 }
+
+extension AppColorExtension on AppColors {
+  String get name {
+    switch (this) {
+      case AppColors.sugarBabyBalance:
+        return 'sugarBabyBalance';
+      case AppColors.sugarDaddyBalance:
+        return 'sugarDaddyBalance';
+      case AppColors.sugarFundsBalance:
+        return 'sugarFundsBalance';
+      case AppColors.sugarFundsFullBalance:
+        return 'sugarFundsFullBalance';
+      case AppColors.sugarFundsHalfBalance:
+        return 'sugarFundsHalfBalance';
+      case AppColors.sugarFundsEmptyBalance:
+        return 'sugarFundsEmptyBalance';
+      case AppColors.roundedContainer:
+        return 'roundedContainer';
+      case AppColors.background:
+        return 'background';
+      case AppColors.accountBoxDefault:
+        return 'accountBoxDefault';
+      case AppColors.accountBox2:
+        return 'accountBox2';
+      case AppColors.accountBox3:
+        return 'accountBox3';
+      case AppColors.accountBox4:
+        return 'accountBox4';
+      case AppColors.accountBox5:
+        return 'accountBox5';
+      case AppColors.accountBox6:
+        return 'accountBox6';
+    }
+  }
+
+  static Color fromName(String name) {
+    return AppColors.values
+        .firstWhere(
+          (color) => color.name == name,
+          orElse: () => AppColors
+              .background, // Provide a default color if no match is found
+        )
+        .color;
+  }
+}

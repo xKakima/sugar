@@ -1,0 +1,8 @@
+Todo
+
+Account
+* Account Index
+* Account can be dragged to move indexes On HOLD
+
+Expenese
+* Slide functionality (refer to shopee mobile)

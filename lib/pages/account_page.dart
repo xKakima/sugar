@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
 import 'package:sugar/controller/account_page_controller.dart';
 import 'package:sugar/database/account.dart';
+import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/account_box.dart';
 import 'package:sugar/widgets/account_page_header.dart';
 import 'package:sugar/widgets/notifier.dart';
@@ -13,65 +14,87 @@ import 'package:sugar/utils/utils.dart';
 
 class AccountPage extends StatefulWidget {
   final String title;
-  final Color headerColor;
+  final String headerColor;
   final String userId;
+  final bool isUserAccount;
 
   AccountPage(
       {super.key,
       required this.title,
       required this.headerColor,
-      required this.userId});
+      required this.userId,
+      required this.isUserAccount});
 
   final AccountPageController controller = Get.put(AccountPageController());
 
-  AccountBox emptyAccountBox = AccountBox(
+  final AccountBox emptyAccountBox = AccountBox(
+    id: '0',
     accountName: 'empty',
+    color: AppColors.accountBoxDefault.color,
     amount: '0',
     onTap: () => {},
     isEmpty: true,
   );
 
-  Future<List<AccountBox>?> loadAccounts() async {
-    final accounts = await fetchAccounts(userId);
-
-    print('Accounts: $accounts');
-    if (accounts!.isEmpty) {
-      return [emptyAccountBox];
-    }
-    // await Future.delayed(
-    //     const Duration(milliseconds: 0)); // Simulating API delay
-    // return [
-    //   AccountBox(
-    //     accountName: 'BANK 01',
-    //     amount: '450,000',
-    //     // accountNumber: '5283 2548 4700 2489',
-    //     onTap: () => {
-    //       controller.updateAccountAmount('100,000'),
-    //       controller.toggleExpanded(),
-    //       // controller.updateAccountBox(this)
-    //       // nvm should be in database
-    //     }, // Toggle state on tap
-    //   ),
-    //   AccountBox(
-    //     accountName: 'BANK 02',
-    //     amount: '97,000',
-    //     // accountNumber: '5283 2548 4700 2489',
-    //     onTap: () => {
-    //       controller.updateAccountAmount('100,000'),
-    //       controller.toggleExpanded()
-    //     },
-    //   ),
-    // ];
-  }
-
-  final List<Color> boxColors = [
-    AppColors.accountBoxDefault.color,
-    AppColors.accountBox2.color,
-    AppColors.accountBox3.color,
-    AppColors.accountBox4.color,
-    AppColors.accountBox5.color,
-    AppColors.accountBox6.color,
+  final List<String> boxColors = [
+    AppColors.accountBoxDefault.name,
+    AppColors.accountBox2.name,
+    AppColors.accountBox3.name,
+    AppColors.accountBox4.name,
+    AppColors.accountBox5.name,
+    AppColors.accountBox6.name,
   ];
+
+  Future<List<AccountBox>?> loadAccounts() async {
+    try {
+      final response = await fetchAccounts(userId);
+
+      print('Accounts: $response');
+
+      // Return emptyAccountBox list if no accounts were found
+      if (response == null || response.isEmpty) {
+        print("No accounts found");
+        return [emptyAccountBox];
+      }
+
+      print("Has accounts");
+
+      var accounts = response
+          .map((account) => AccountBox(
+                id: account['id'],
+                accountName: account['account_name'],
+                amount: convertAndFormatToString(account['balance']),
+                color: AppColorExtension.fromName(account['color']),
+                onTap: () => isUserAccount
+                    ? {
+                        controller.accountId.value = account['id'],
+                        controller.accountAmount.value =
+                            convertAndFormatToString(account['balance']),
+                        controller.accountName = account['account_name'],
+                        controller.setHeaderColor(account['color']),
+                        controller.editableAccountTitle.value =
+                            account['account_name'],
+                        print(
+                            "Account Value: ${controller.accountAmount.value}"),
+                        print("Account ID: ${controller.accountId.value}"),
+                        print(account['id']),
+                        controller.editingState.value = EditingState.editAmount,
+                        controller.toggleExpanded(),
+                      }
+                    : {},
+              ))
+          .toList();
+
+      accounts.add(emptyAccountBox);
+      return accounts;
+    } catch (error) {
+      // Optionally log the error for debugging
+      print('Error loading accounts: $error');
+
+      // Re-throw the error so it can be caught in the FutureBuilder
+      throw Exception('Failed to load accounts: $error');
+    }
+  }
 
   @override
   _AccountPageState createState() => _AccountPageState();
@@ -80,15 +103,47 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  late TextEditingController _accountNameController;
+  late Future<List<AccountBox>?> _accountsFuture;
+  late String _accountAmount = "0.0";
+
+  Future<void> getAccountBalanceTotal() async {
+    final response = await fetchAccountsTotal(widget.isUserAccount);
+    _accountAmount = convertAndFormatToString(response);
+    print("Account Amount: $_accountAmount");
+    setState(() {}); // Call setState to update the UI after fetching the total
+  }
 
   @override
   void initState() {
     super.initState();
 
+    widget.controller.setAccountTitle(widget.title);
+    _accountNameController = TextEditingController();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+
+    _animationController.addStatusListener((status) {
+      switch (status) {
+        case AnimationStatus.completed:
+          widget.controller.setBodyData(false);
+          break;
+        case AnimationStatus.dismissed:
+          widget.controller.setBodyData(false);
+          break;
+        default:
+          widget.controller.setBodyData(true);
+          break;
+      }
+    });
+
+    _accountNameController.addListener(() {
+      widget.controller.accountName = _accountNameController.text;
+    });
+
+    _accountsFuture = widget.loadAccounts(); // Store the future
 
     // Trigger animation based on the isExpanded state
     widget.controller.isExpanded.listen((isExpanded) {
@@ -99,21 +154,28 @@ class _AccountPageState extends State<AccountPage>
       }
     });
 
-    widget.controller.headerColor.value = widget.headerColor;
+    widget.controller.setHeaderColor(widget.headerColor);
+
+    widget.boxColors.forEach((color) {
+      print("Color: $color");
+    });
+
+    getAccountBalanceTotal();
   }
 
   @override
   void dispose() {
-    _animationController
-        .dispose(); // Dispose of the controller when the widget is removed
+    _animationController.dispose();
+    _accountNameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: FutureBuilder<List<AccountBox>?>(
-        future: widget.loadAccounts(),
+        future: _accountsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -126,8 +188,11 @@ class _AccountPageState extends State<AccountPage>
           return Obx(() => Stack(
                 children: [
                   Container(
-                      color: widget
-                          .controller.headerColor.value), // Background color
+                    color: widget.controller.isExpanded == false
+                        ? AppColorExtension.fromName(widget.headerColor)
+                        : AppColorExtension.fromName(
+                            widget.controller.accountBoxColor.value),
+                  ),
                   _buildHeader(),
                   _buildAnimatedContainer(accounts),
                 ],
@@ -144,9 +209,9 @@ class _AccountPageState extends State<AccountPage>
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: AccountPageHeader(
-                title: widget.title,
+                title: widget.controller.editableAccountTitle.value,
 
-                balance: '1,500,000',
+                balance: _accountAmount,
 
                 isExpanded: widget.controller.isExpanded
                     .value, // React to the isExpanded state
@@ -169,31 +234,39 @@ class _AccountPageState extends State<AccountPage>
                   ? 0.86
                   : 0.75), // Animate size
           child: RoundedContainer(
-              isLarge: true,
-              child: widget.controller.isExpanded.value
-                  ? _buildExpandedSection(accounts)
-                  : _buildAccountGrid(accounts)),
+            isLarge: true,
+            child: _buildBodyData(accounts),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildExpandedSection(accounts) {
-    return accounts.length == 1
-        ? _buildEditAccountSection()
-        : _buildEditAmountSection();
+  Widget _buildBodyData(accounts) {
+    return widget.controller.getBodyData()
+        ? const SizedBox()
+        : widget.controller.isExpanded.value
+            ? _buildEditSection()
+            : _buildAccountGrid(accounts);
   }
 
-  Widget _buildColorContainer(Color color) {
+  Widget _buildEditSection() {
+    return Obx(() =>
+        widget.controller.editingState.value == EditingState.editAmount
+            ? _buildEditAmountSection()
+            : _buildEditAccountSection());
+  }
+
+  Widget _buildColorContainer(String color) {
     return GestureDetector(
       onTap: () => {
-        widget.controller.headerColor.value = color,
+        widget.controller.accountBoxColor.value = color,
       }, // The onTap callback is triggered when the container is tapped
       child: Container(
         width: 35, // Define the width
         height: 35, // Set height equal to width to make it square
         decoration: BoxDecoration(
-          color: color,
+          color: AppColorExtension.fromName(color),
           borderRadius: BorderRadius.circular(3),
         ),
       ),
@@ -201,6 +274,7 @@ class _AccountPageState extends State<AccountPage>
   }
 
   Widget _buildEditAccountSection() {
+    _accountNameController.text = widget.controller.accountName;
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -215,22 +289,44 @@ class _AccountPageState extends State<AccountPage>
           ),
         ),
         SizedBox(height: getHeightPercentage(context, 1.5)),
-        Text(
-          "BANK 01",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        SizedBox(
+          width: getWidthPercentage(context, 60),
+          child: TextField(
+            controller: _accountNameController,
+            decoration:
+                InputDecoration(hintText: 'BANK 01', border: InputBorder.none),
+            style: const TextStyle(color: Colors.white, fontSize: 36),
+            textAlign: TextAlign.center,
           ),
         ),
         SizedBox(height: getHeightPercentage(context, 3)),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          SizedBox.shrink(),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          SizedBox(width: getWidthPercentage(context, 10)),
           ...widget.boxColors.map((color) {
             return _buildColorContainer(color);
           }),
-          SizedBox.shrink(),
+          SizedBox(width: getWidthPercentage(context, 10)),
         ]),
+        SizedBox(height: getHeightPercentage(context, 30)),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: IconButton(
+              icon: const Icon(Icons.check_box, color: Colors.white, size: 50),
+              onPressed: () async {
+                final response =
+                    await upsertAccount(widget.controller.getNewAccountData());
+                print('Response: $response');
+                if (response['success']) {
+                  setState(() {
+                    _accountsFuture = widget.loadAccounts();
+                    getAccountBalanceTotal();
+                  });
+                  widget.controller.toggleExpanded();
+                } else {
+                  Notifier.show("Failed to add account, kindly try again", 1);
+                }
+              }),
+        ),
       ],
     );
   }
@@ -261,15 +357,18 @@ class _AccountPageState extends State<AccountPage>
             },
           ),
         ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: PlusButton(
-            onPressed: () => {
-              widget.controller.hideBodyData.value = true,
-              widget.controller.toggleExpanded()
-            },
-          ),
-        ),
+        widget.userId == supabase.auth.currentUser!.id
+            ? Align(
+                alignment: Alignment.bottomCenter,
+                child: PlusButton(
+                  onPressed: () => {
+                    widget.controller.editingState.value =
+                        EditingState.editAmount,
+                    widget.controller.toggleExpanded()
+                  },
+                ),
+              )
+            : const SizedBox(),
       ],
     );
   }
@@ -278,49 +377,85 @@ class _AccountPageState extends State<AccountPage>
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Icon(Icons.edit_note_rounded),
+        widget.controller.isNewAccount()
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(width: getWidthPercentage(context, 10)),
+                  Icon(Icons.edit_note_rounded),
+                  Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () async {
+                          // Add your click action here
+                          final response = await deleteAccount(
+                              widget.controller.accountId.value);
+                          if (response) {
+                            setState(() {
+                              _accountsFuture = widget.loadAccounts();
+                              getAccountBalanceTotal();
+                            });
+                            widget.controller.setBackToMainTitle();
+                            widget.controller.toggleExpanded();
+                          } else {
+                            Notifier.show(
+                                "Failed to delete account, kindly try again",
+                                1);
+                          }
+                        },
+                        child: Icon(Icons.delete),
+                      ))
+                ],
+              )
+            : Icon(Icons.edit_note_rounded),
         SizedBox(height: getHeightPercentage(context, 1.5)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'LAST MONTH',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'LAST MONTH',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Text(
+                  'LAST 2 MONTHS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 15),
-            Text(
-              'PHP 370,000',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'LAST 2 MONTHS',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 15),
-            Text(
-              'PHP 330,000',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
+            SizedBox(width: getWidthPercentage(context, 10)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PHP 370,000', //TODO get actual value if account is not empty
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Text(
+                  'PHP 330,000', //TODO get actual value if account is not empty
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -338,7 +473,7 @@ class _AccountPageState extends State<AccountPage>
           widget.controller.accountAmount.value.toString(),
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 36,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -347,37 +482,18 @@ class _AccountPageState extends State<AccountPage>
           onValueChanged: widget.controller.updateAccountAmount,
           initialValue: widget.controller.accountAmount.value,
         ),
-      ],
-    );
-  }
-
-  Widget _buildCreateNewAccount() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Icon(Icons.edit_note_rounded),
-        SizedBox(height: getHeightPercentage(context, 1.5)),
-        Text(
-          'ADD INITIAL AMOUNT',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
+        SizedBox(height: getHeightPercentage(context, 5)),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: PlusButton(
+            onPressed: () => {
+              print("Edit State: ${widget.controller.editingState.value}"),
+              widget.controller.editingState.value = EditingState.editAccount,
+              print("Edit State: ${widget.controller.editingState.value}"),
+              // widget.controller.hideBodyData.value = true,
+              // widget.controller.toggleExpanded()
+            },
           ),
-        ),
-        SizedBox(height: getHeightPercentage(context, 1.5)),
-        Text(
-          widget.controller.accountAmount.value.toString(),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: getHeightPercentage(context, 3)),
-        Numpad(
-          onValueChanged: widget.controller.updateAccountAmount,
-          initialValue: widget.controller.accountAmount.value,
         ),
       ],
     );

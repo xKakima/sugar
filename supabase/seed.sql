@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS sugar.account (
     user_id UUID NOT NULL REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
     account_name TEXT NOT NULL DEFAULT 'sweet funds',
     balance  NUMERIC(10,2) NOT NULL DEFAULT 0,
+    color TEXT NOT NULL DEFAULT '0xff000000',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -104,12 +105,7 @@ BEGIN
     SET balance = balance - NEW.amount, -- Deduct the expense amount from the balance
         updated_at = NOW() -- Update the updated_at timestamp
     WHERE (user_id = NEW.user_id OR partner_id = NEW.user_id);
-
-    -- Ensure the balance is never negative
-    UPDATE sugar.monthly_budget
-    SET balance = 0
-    WHERE balance < 0;
-
+    
     RETURN NEW; -- Return the new record for insertion
 END;
 $$ LANGUAGE plpgsql;

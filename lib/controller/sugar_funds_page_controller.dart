@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:sugar/utils/utils.dart';
 
 class SugarFundsPageController extends GetxController {
   RxBool isExpanded = false.obs;
@@ -39,7 +40,7 @@ class SugarFundsPageController extends GetxController {
   }
 
   Map<String, dynamic> getNewExpenseData() {
-    var amount = expenseAmount.value;
+    var amount = formatNumber(expenseAmount.value);
     var type = expenseType.value;
 
     expenseAmount.value = "";
