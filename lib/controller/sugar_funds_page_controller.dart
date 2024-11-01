@@ -2,6 +2,15 @@ import 'package:get/get.dart';
 import 'package:sugar/utils/utils.dart';
 
 class SugarFundsPageController extends GetxController {
+  final List<String> types = [
+    "RAMEN",
+    "GROCERY",
+    "MEAL",
+    "ICE_CREAM",
+    "COFFEE",
+    "SNACKS",
+  ];
+
   RxBool isExpanded = false.obs;
   RxBool isExpenseSummed = false.obs;
   RxString sugarFundsAmount = "".obs;

@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS sugar.account (
     account_name TEXT NOT NULL DEFAULT 'sweet funds',
     balance  NUMERIC(10,2) NOT NULL DEFAULT 0,
     color TEXT NOT NULL DEFAULT '0xff000000',
+    account_index INTEGER NOT NULL DEFAULT 0;
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -87,6 +88,7 @@ CREATE TABLE IF NOT EXISTS sugar.expense(
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+alter table sugar.expense replica identity full;
 
 -- Create Triggers
 CREATE OR REPLACE FUNCTION sugar.update_updated_at_column()
@@ -96,6 +98,22 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION set_account_index()
+RETURNS TRIGGER AS $$
+DECLARE
+    last_index INT;
+BEGIN
+    -- Find the last account_index for the user
+    SELECT COALESCE(MAX(account_index), -1) + 1 INTO last_index
+    FROM sugar.account
+    WHERE user_id = NEW.user_id;
+
+    -- Set the account_index for the new account
+    NEW.account_index := last_index;
+
+    RETURN NEW; -- Return the modified new row
+END;
 
 CREATE OR REPLACE FUNCTION sugar.update_budget_balance()
 RETURNS TRIGGER AS $$
@@ -107,6 +125,19 @@ BEGIN
     WHERE (user_id = NEW.user_id OR partner_id = NEW.user_id);
     
     RETURN NEW; -- Return the new record for insertion
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sugar.update_budget_balance_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the user_id in the expense matches either the user_id or partner_id in the monthly_budget table
+    UPDATE sugar.monthly_budget
+    SET balance = balance + OLD.amount, -- Readd the expense amount from the balance
+        updated_at = NOW() -- Update the updated_at timestamp
+    WHERE (user_id = OLD.user_id OR partner_id = OLD.user_id);
+    
+    RETURN OLD; -- Return the new record for insertion
 END;
 $$ LANGUAGE plpgsql;
 
@@ -145,6 +176,18 @@ CREATE TRIGGER update_budget_balance_trigger
 AFTER INSERT ON sugar.expense
 FOR EACH ROW
 EXECUTE FUNCTION sugar.update_budget_balance();
+
+CREATE TRIGGER update_budget_balance_trigger_delete
+BEFORE DELETE ON sugar.expense
+FOR EACH ROW
+EXECUTE FUNCTION sugar.update_budget_balance_delete();
+
+CREATE TRIGGER before_insert_account
+BEFORE INSERT ON sugar.account
+FOR EACH ROW
+EXECUTE FUNCTION set_account_index();
+
+
 
 -- Create callable functions through rpc
 
@@ -238,6 +281,20 @@ BEGIN
     OR e.user_id = (SELECT ud.partner_id FROM sugar.user_data ud WHERE ud.user_id = _user_id);
 END;
 $$ LANGUAGE plpgsql;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.table_constraints 
+        WHERE constraint_name = 'unique_user_account_index' 
+        AND table_name = 'account'
+    ) THEN
+        ALTER TABLE sugar.account
+        ADD CONSTRAINT unique_user_account_index UNIQUE (user_id, account_index);
+    END IF;
+END $$;
+
 
 
 

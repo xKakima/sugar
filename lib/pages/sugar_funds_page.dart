@@ -12,6 +12,7 @@ import 'package:sugar/widgets/plus_button.dart';
 import 'package:sugar/widgets/rounded_container.dart';
 import 'package:sugar/widgets/sugar_funds_page_header.dart';
 import 'package:sugar/utils/utils.dart';
+import 'package:sugar/widgets/swipeable_list_item.dart';
 
 class SugarFundsPage extends StatefulWidget {
   final String title;
@@ -238,7 +239,20 @@ class _SugarFundsPageState extends State<SugarFundsPage>
                       padding: const EdgeInsets.all(16.0),
                       itemCount: expenses.length,
                       itemBuilder: (context, index) {
-                        return expenses[index];
+                        return SwipeableListItem(
+                          child:
+                              expenses[index], // Display the ExpenseData widget
+                          onSwipe: () async {
+                            final expenseId = expenses[index].id;
+                            final deleteSuccessful = await deleteExpense(
+                                expenseId); // Perform deletion
+                            if (deleteSuccessful) {
+                              Notifier.show("Expense deleted", 1);
+                            } else {
+                              Notifier.show("Failed to delete expense", 1);
+                            }
+                          },
+                        );
                       },
                     ),
             ),

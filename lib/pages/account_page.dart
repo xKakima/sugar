@@ -32,6 +32,7 @@ class AccountPage extends StatefulWidget {
     accountName: 'empty',
     color: AppColors.accountBoxDefault.color,
     amount: '0',
+    index: 0,
     onTap: () => {},
     isEmpty: true,
   );
@@ -65,6 +66,8 @@ class AccountPage extends StatefulWidget {
                 accountName: account['account_name'],
                 amount: convertAndFormatToString(account['balance']),
                 color: AppColorExtension.fromName(account['color']),
+                index: account[
+                    'account_index'], // Assuming AccountBox has an index property
                 onTap: () => isUserAccount
                     ? {
                         controller.accountId.value = account['id'],
@@ -84,6 +87,8 @@ class AccountPage extends StatefulWidget {
                     : {},
               ))
           .toList();
+
+      accounts.sort((a, b) => a.index.compareTo(b.index));
 
       accounts.add(emptyAccountBox);
       return accounts;

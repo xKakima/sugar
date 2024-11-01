@@ -41,3 +41,12 @@ Future<dynamic> addExpense(Map<String, dynamic> expenseData) async {
     return {"success": false, "message": e.toString()};
   }
 }
+
+Future<bool> deleteExpense(String expenseId) async {
+  final response = await supabase.from('expense').delete().eq('id', expenseId);
+
+  final expense = await supabase.from('expense').select().eq('id', expenseId);
+  print("deleteExpense: $expense");
+  if (expense.isEmpty) return true;
+  return false;
+}

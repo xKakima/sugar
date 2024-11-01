@@ -7,6 +7,7 @@ class AccountBox extends StatelessWidget {
   final String accountName;
   final String amount;
   final Color color;
+  final int index;
   // final String accountNumber;
   final VoidCallback onTap;
   final bool isEmpty;
@@ -17,6 +18,7 @@ class AccountBox extends StatelessWidget {
       required this.accountName,
       required this.amount,
       required this.color,
+      required this.index,
       // required this.accountNumber,
       required this.onTap,
       this.isEmpty = false});
