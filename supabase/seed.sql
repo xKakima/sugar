@@ -75,10 +75,19 @@ CREATE TABLE IF NOT EXISTS sugar.account (
     account_name TEXT NOT NULL DEFAULT 'sweet funds',
     balance  NUMERIC(10,2) NOT NULL DEFAULT 0,
     color TEXT NOT NULL DEFAULT '0xff000000',
-    account_index INTEGER NOT NULL DEFAULT 0;
+    account_index INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS sugar.account_balance_history (
+    id UUID NOT NULL UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
+    account_id UUID NOT NULL UNIQUE REFERENCES sugar.account(id) ON DELETE CASCADE,
+    balance NUMERIC(10,2) NOT NULL,
+    recorded_at DATE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 
 CREATE TABLE IF NOT EXISTS sugar.expense(
     id UUID NOT NULL PRIMARY KEY  UNIQUE DEFAULT uuid_generate_v4 (),
@@ -99,7 +108,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION set_account_index()
+CREATE OR REPLACE FUNCTION sugar.set_account_index()
 RETURNS TRIGGER AS $$
 DECLARE
     last_index INT;
@@ -114,6 +123,19 @@ BEGIN
 
     RETURN NEW; -- Return the modified new row
 END;
+
+CREATE OR REPLACE FUNCTION sugar.decrement_account_index()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Decrement index of all accounts that have a higher index than the deleted account
+    UPDATE sugar.account
+    SET account_index = GREATEST(account_index - 1, 0)  -- Ensure index does not go below 0
+    WHERE user_id = OLD.user_id AND account_index > OLD.account_index;
+
+    RETURN OLD;  -- Return OLD to indicate the row that was deleted
+END;
+$$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION sugar.update_budget_balance()
 RETURNS TRIGGER AS $$
@@ -161,6 +183,27 @@ BEGIN
     END LOOP;
 END $$;
 
+CREATE OR REPLACE FUNCTION sugar.update_account_balance_history()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If it's an insert (account creation), add a new entry with a balance of 0
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO sugar.account_balance_history (account_id, balance, recorded_at)
+        VALUES (NEW.id, 0, CURRENT_DATE);
+
+    -- If it's an update, update the balance in account_balance_history
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO sugar.account_balance_history (account_id, balance, recorded_at)
+        VALUES (NEW.id, NEW.balance, CURRENT_DATE)
+        ON CONFLICT (account_id) 
+        DO UPDATE SET balance = EXCLUDED.balance, recorded_at = CURRENT_DATE;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE TRIGGER set_unique_code
 BEFORE INSERT ON sugar.user_data
 FOR EACH ROW
@@ -170,7 +213,6 @@ CREATE TRIGGER set_balance
 BEFORE INSERT ON sugar.monthly_budget
 FOR EACH ROW
 EXECUTE FUNCTION sugar.set_monthly_budget_balance();
-
 
 CREATE TRIGGER update_budget_balance_trigger
 AFTER INSERT ON sugar.expense
@@ -185,8 +227,39 @@ EXECUTE FUNCTION sugar.update_budget_balance_delete();
 CREATE TRIGGER before_insert_account
 BEFORE INSERT ON sugar.account
 FOR EACH ROW
-EXECUTE FUNCTION set_account_index();
+EXECUTE FUNCTION sugar.set_account_index();
 
+CREATE TRIGGER after_delete_account
+AFTER DELETE ON sugar.account
+FOR EACH ROW
+EXECUTE FUNCTION sugar.decrement_account_index();
+
+
+CREATE TRIGGER account_balance_history_trigger
+AFTER INSERT OR UPDATE ON sugar.account
+FOR EACH ROW
+EXECUTE FUNCTION sugar.update_account_balance_history();
+
+
+CREATE OR REPLACE FUNCTION update_account_balance_history()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If it's an insert (account creation), add a new entry with a balance of 0
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO sugar.account_balance_history (account_id, balance, recorded_at)
+        VALUES (NEW.id, 0, CURRENT_DATE);
+
+    -- If it's an update, update the balance in account_balance_history
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO sugar.account_balance_history (account_id, balance, recorded_at)
+        VALUES (NEW.id, NEW.balance, CURRENT_DATE)
+        ON CONFLICT (account_id) 
+        DO UPDATE SET balance = EXCLUDED.balance, recorded_at = CURRENT_DATE;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 
 -- Create callable functions through rpc

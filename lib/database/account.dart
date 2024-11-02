@@ -11,13 +11,13 @@ Future<dynamic> upsertAccount(Map<String, dynamic> accountData) async {
       accountData.remove('id');
     }
     accountData['user_id'] = supabase.auth.currentUser!.id;
-    print("Inserting account data: $accountData");
-    await supabase.from('account').upsert(accountData);
+    print("upserting account data: $accountData");
+    await supabase.from('account').upsert(accountData, onConflict: 'id');
 
-    print('Insert successful');
-    return {"success": true, "message": 'Insert successful'};
+    print('upserting successful');
+    return {"success": true, "message": 'upserting successful'};
   } catch (e) {
-    print('Exception during insert: $e');
+    print('Exception during upserting: $e');
     return {"success": false, "message": e.toString()};
   }
 }
@@ -51,4 +51,18 @@ Future<bool> deleteAccount(String accountId) async {
   print("deleteAccount: $account");
   if (account.isEmpty) return true;
   return false;
+}
+
+Future<double> getAccountBalanceHistory(String accountId) async {
+  final response = await supabase
+      .from('account_balance_history')
+      .select("balance")
+      .eq('account_id', accountId)
+      .order('recorded_at', ascending: false)
+      .limit(1)
+      .single(); // Ensures only one record is returned
+  if (response.isEmpty) return 0;
+
+  print("getLatestAccountBalance: $response");
+  return response['balance'];
 }

@@ -50,53 +50,47 @@ class AccountPage extends StatefulWidget {
     try {
       final response = await fetchAccounts(userId);
 
-      print('Accounts: $response');
-
-      // Return emptyAccountBox list if no accounts were found
+      // Return a list with emptyAccountBox if no accounts were found
       if (response == null || response.isEmpty) {
         print("No accounts found");
         return [emptyAccountBox];
       }
 
-      print("Has accounts");
-
-      var accounts = response
-          .map((account) => AccountBox(
-                id: account['id'],
-                accountName: account['account_name'],
-                amount: convertAndFormatToString(account['balance']),
-                color: AppColorExtension.fromName(account['color']),
-                index: account[
-                    'account_index'], // Assuming AccountBox has an index property
-                onTap: () => isUserAccount
-                    ? {
-                        controller.accountId.value = account['id'],
-                        controller.accountAmount.value =
-                            convertAndFormatToString(account['balance']),
-                        controller.accountName = account['account_name'],
-                        controller.setHeaderColor(account['color']),
-                        controller.editableAccountTitle.value =
-                            account['account_name'],
-                        print(
-                            "Account Value: ${controller.accountAmount.value}"),
-                        print("Account ID: ${controller.accountId.value}"),
-                        print(account['id']),
-                        controller.editingState.value = EditingState.editAmount,
-                        controller.toggleExpanded(),
-                      }
-                    : {},
-              ))
-          .toList();
+      // Fetch balances concurrently
+      var accounts = await Future.wait(response.map((account) async {
+        final balanceHistory = await getAccountBalanceHistory(account['id']);
+        print("Balance History: $balanceHistory");
+        return AccountBox(
+          id: account['id'],
+          accountName: account['account_name'],
+          amount: convertAndFormatToString(account['balance']),
+          color: AppColorExtension.fromName(account['color']),
+          index: account[
+              'account_index'], // Assuming AccountBox has an index property
+          onTap: () => isUserAccount
+              ? {
+                  controller.accountId.value = account['id'],
+                  controller.accountAmount.value =
+                      convertAndFormatToString(account['balance']),
+                  controller.accountName = account['account_name'],
+                  controller.setHeaderColor(account['color']),
+                  controller.editableAccountTitle.value =
+                      account['account_name'],
+                  controller.setLastUpdatedAmount(
+                      convertAndFormatToString(balanceHistory)),
+                  controller.accountIndex.value = account['account_index'],
+                  controller.editingState.value = EditingState.editAmount,
+                  controller.toggleExpanded(),
+                }
+              : {},
+        );
+      }).toList());
 
       accounts.sort((a, b) => a.index.compareTo(b.index));
-
-      accounts.add(emptyAccountBox);
+      if (isUserAccount) accounts.add(emptyAccountBox);
       return accounts;
     } catch (error) {
-      // Optionally log the error for debugging
       print('Error loading accounts: $error');
-
-      // Re-throw the error so it can be caught in the FutureBuilder
       throw Exception('Failed to load accounts: $error');
     }
   }
@@ -145,7 +139,7 @@ class _AccountPageState extends State<AccountPage>
     });
 
     _accountNameController.addListener(() {
-      widget.controller.accountName = _accountNameController.text;
+      widget.controller.updateAccountName(_accountNameController.text);
     });
 
     _accountsFuture = widget.loadAccounts(); // Store the future
@@ -298,8 +292,8 @@ class _AccountPageState extends State<AccountPage>
           width: getWidthPercentage(context, 60),
           child: TextField(
             controller: _accountNameController,
-            decoration:
-                InputDecoration(hintText: 'BANK 01', border: InputBorder.none),
+            decoration: InputDecoration(
+                hintText: 'Account Name', border: InputBorder.none),
             style: const TextStyle(color: Colors.white, fontSize: 36),
             textAlign: TextAlign.center,
           ),
@@ -400,7 +394,7 @@ class _AccountPageState extends State<AccountPage>
                               _accountsFuture = widget.loadAccounts();
                               getAccountBalanceTotal();
                             });
-                            widget.controller.setBackToMainTitle();
+                            widget.controller.resetObservables();
                             widget.controller.toggleExpanded();
                           } else {
                             Notifier.show(
@@ -417,11 +411,11 @@ class _AccountPageState extends State<AccountPage>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Column(
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LAST MONTH',
+                  'AMOUNT LAST UPDATED',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -430,30 +424,8 @@ class _AccountPageState extends State<AccountPage>
                 ),
                 const SizedBox(width: 15),
                 Text(
-                  'LAST 2 MONTHS',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: getWidthPercentage(context, 10)),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PHP 370,000', //TODO get actual value if account is not empty
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Text(
-                  'PHP 330,000', //TODO get actual value if account is not empty
+                  widget.controller
+                      .getLastUpdatedAmount(), //TODO get actual value if account is not empty
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 10,

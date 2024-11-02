@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sugar/constants/app_colors.dart';
 
 class AccountBox extends StatelessWidget {
@@ -8,20 +7,21 @@ class AccountBox extends StatelessWidget {
   final String amount;
   final Color color;
   final int index;
-  // final String accountNumber;
   final VoidCallback onTap;
   final bool isEmpty;
+  final String previousAmount;
 
-  const AccountBox(
-      {super.key,
-      required this.id,
-      required this.accountName,
-      required this.amount,
-      required this.color,
-      required this.index,
-      // required this.accountNumber,
-      required this.onTap,
-      this.isEmpty = false});
+  const AccountBox({
+    Key? key,
+    required this.id,
+    required this.accountName,
+    required this.amount,
+    required this.color,
+    required this.index,
+    required this.onTap,
+    this.isEmpty = false,
+    this.previousAmount = '0',
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,23 +30,23 @@ class AccountBox extends StatelessWidget {
 
   Widget _buildEmptyAccountBox() {
     return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.accountBoxDefault.color,
-          // Adjust the corner radius for a more rounded look
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Align(
-          alignment: Alignment.center,
-          child: Text(
-            'add a new account',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accountBoxDefault.color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          'Add a new account',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildAccountBox() {
@@ -56,7 +56,6 @@ class AccountBox extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: color,
-          // Adjust the corner radius for a more rounded look
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(

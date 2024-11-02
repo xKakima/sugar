@@ -15,13 +15,15 @@ class AccountPageController extends GetxController {
   RxString accountBoxColor = AppColors.accountBoxDefault.name.obs;
   RxString accountId = "".obs;
   RxString editableAccountTitle = "".obs;
+  RxString lastUpdatedAmount = "0".obs;
+  RxInt accountIndex = 0.obs;
   String mainAccountTitle = "";
 
   RxBool hideBodyData = false.obs;
 
   Rx<EditingState> editingState = EditingState.editAmount.obs;
 
-  String accountName = "BANK 01";
+  String accountName = "";
 
   // Toggle the expanded state
   void toggleExpanded() {
@@ -37,25 +39,8 @@ class AccountPageController extends GetxController {
     mainAccountTitle = title;
   }
 
-  void setBackToMainTitle() {
-    editableAccountTitle.value = mainAccountTitle;
-    resetObservables();
-  }
-
-  bool isNewAccount() {
-    return mainAccountTitle != editableAccountTitle.value;
-  }
-
   void setBodyData(bool hideBodyData) {
     this.hideBodyData.value = hideBodyData;
-  }
-
-  bool getBodyData() {
-    return hideBodyData.value;
-  }
-
-  void updateAccountAmount(String amount) {
-    accountAmount.value = amount;
   }
 
   void setHeaderColor(String color) {
@@ -63,15 +48,51 @@ class AccountPageController extends GetxController {
     accountBoxColor.value = color;
   }
 
+  void setLastUpdatedAmount(String amount) {
+    print("Setting last updated amount: $amount");
+    lastUpdatedAmount.value = amount;
+  }
+
+  void updateAccountName(String name) {
+    accountName = name;
+    print("New account name: $accountName");
+  }
+
+  void updateAccountAmount(String amount) {
+    accountAmount.value = amount;
+  }
+
   void resetObservables() {
     accountAmount.value = "0";
     accountId.value = "";
-    editableAccountTitle.value = "";
+    editableAccountTitle.value = mainAccountTitle;
+    lastUpdatedAmount.value = "0";
+    accountIndex.value = 0;
+    accountName = "";
+  }
+
+  bool isNewAccount() {
+    return mainAccountTitle != editableAccountTitle.value;
+  }
+
+  bool getBodyData() {
+    return hideBodyData.value;
+  }
+
+  String getLastUpdatedAmount() {
+    print("Getting last updated amount: ${lastUpdatedAmount.value}");
+    return lastUpdatedAmount.value;
   }
 
   Map<String, dynamic> getNewAccountData() {
     var amount = formatNumber(accountAmount.value);
     String accId = accountId.value;
+    print(accountName == "" || accountName == mainAccountTitle);
+    String accName = accountName == "" || accountName == mainAccountTitle
+        ? "New Account"
+        : accountName;
+    print("Account name: $accName");
+    int accIndex = accountIndex.value;
     resetObservables();
 
     print(
@@ -79,9 +100,10 @@ class AccountPageController extends GetxController {
 
     return {
       "id": accId,
-      "account_name": accountName,
+      "account_name": accName,
       "balance": amount,
       "color": accountBoxColor.value,
+      "account_index": accIndex
     };
   }
 }

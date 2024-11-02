@@ -41,7 +41,7 @@ class AccountPageHeader extends StatelessWidget {
                               }
                             else
                               {
-                                controller.setBackToMainTitle(),
+                                controller.resetObservables(),
                                 controller.toggleExpanded()
                               }
                           })
