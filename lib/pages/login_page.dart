@@ -14,15 +14,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> _nativeGoogleSignIn(BuildContext context) async {
   late bool isAlreadySignedIn = false;
-  const webClientId =
-      "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com";
-
+  print(Theme.of(context).platform);
   final GoogleSignIn googleSignIn = GoogleSignIn(
-    // ignore: unrelated_type_equality_checks
-    clientId: DefaultFirebaseOptions.currentPlatform == TargetPlatform.iOS
+    clientId: Theme.of(context).platform == TargetPlatform.iOS
         ? DefaultFirebaseOptions.ios.iosClientId
-        : DefaultFirebaseOptions.android.androidClientId,
-    serverClientId: webClientId,
+        : "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com",
+    scopes: ['email', 'profile'],
   );
 
   try {
