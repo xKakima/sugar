@@ -46,27 +46,30 @@ class DefaultFirebaseOptions {
     messagingSenderId: '511559276850',
     projectId: 'sugar-437011',
     authDomain: 'sugar-437011.firebaseapp.com',
-    storageBucket: 'sugar-437011.appspot.com',
+    storageBucket: 'sugar-437011.firebasestorage.app',
     measurementId: 'G-NYMJZ78RG0',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAkkyF-xgieSlwtu-ci289KzbpUpX_V2Rw',
-    appId: '1:511559276850:android:f87ba6af1af61393629f2b',
+    appId: '1:511559276850:android:2730503042167b66629f2b',
     messagingSenderId: '511559276850',
     projectId: 'sugar-437011',
-    storageBucket: 'sugar-437011.appspot.com',
+    storageBucket: 'sugar-437011.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD_lrT8ynr1b4e_EW-V3qTiAT0pFyJpeLs',
-    appId: '1:511559276850:ios:3bf6e77a24942295629f2b',
+    appId: '1:511559276850:ios:dd34db19dc93ec93629f2b',
     messagingSenderId: '511559276850',
     projectId: 'sugar-437011',
-    storageBucket: 'sugar-437011.appspot.com',
+    storageBucket: 'sugar-437011.firebasestorage.app',
     androidClientId: '511559276850-a64rvj07blo1fh3p5r956nm75jrcte29.apps.googleusercontent.com',
+    iosClientId: '511559276850-8bk879oh50pnmc1npu3tj7ea4qdc1j9n.apps.googleusercontent.com',
     iosBundleId: 'com.venxkakima.sugar',
   );
+  
+
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD_lrT8ynr1b4e_EW-V3qTiAT0pFyJpeLs',

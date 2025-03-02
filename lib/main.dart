@@ -22,6 +22,7 @@ Future<void> main() async {
   Get.put(DataStoreController());
 
   await Firebase.initializeApp(
+    name: "sugar",
     options: DefaultFirebaseOptions.currentPlatform,
   );
 

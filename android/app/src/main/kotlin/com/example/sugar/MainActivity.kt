@@ -1,4 +1,4 @@
-package com.example.sugar
+package com.venxkakima.sugar
 
 import io.flutter.embedding.android.FlutterActivity
 
