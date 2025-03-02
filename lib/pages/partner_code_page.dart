@@ -22,6 +22,7 @@ class _PartnerCodePageState extends State<PartnerCodePage> {
   final dataStore = Get.find<DataStoreController>();
   bool _hasCheckedPartnerCode = false;
 
+  @override
   void initState() {
     super.initState();
 

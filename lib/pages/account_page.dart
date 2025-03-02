@@ -155,9 +155,9 @@ class _AccountPageState extends State<AccountPage>
 
     widget.controller.setHeaderColor(widget.headerColor);
 
-    widget.boxColors.forEach((color) {
+    for (var color in widget.boxColors) {
       print("Color: $color");
-    });
+    }
 
     getAccountBalanceTotal();
   }

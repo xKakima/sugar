@@ -15,7 +15,7 @@ class ExpenseData extends StatelessWidget {
       required this.amount});
 
   factory ExpenseData.fromMap(Map<String, dynamic> data) {
-    print("Parsing Data ${data}");
+    print("Parsing Data $data");
     print(data['created_at']);
     print(data['expense_type']);
     print(data['amount']);

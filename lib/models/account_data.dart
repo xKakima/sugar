@@ -15,7 +15,7 @@ class AccountData extends StatelessWidget {
       required this.onTap});
 
   factory AccountData.fromMap(Map<String, dynamic> data) {
-    print("Parsing Data ${data}");
+    print("Parsing Data $data");
     return AccountData(
       id: data['id'] ?? 'Unknown ID', // Provide a default value if null
       name: data['name'] ?? 'Unknown Name', // Default to 'Unknown Name'

@@ -37,9 +37,9 @@ Future<double> fetchAccountsTotal(bool forCurrentUser) async {
   if (response.isEmpty) return 0.0;
 
   late double total = 0.0;
-  response.forEach((balance) {
+  for (var balance in response) {
     total += balance['balance'];
-  });
+  }
 
   return total;
 }

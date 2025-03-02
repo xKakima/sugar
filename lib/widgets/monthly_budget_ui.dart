@@ -8,11 +8,11 @@ class MonthlyBudgetUI extends StatelessWidget {
   final VoidCallback onConfirm;
 
   const MonthlyBudgetUI({
-    Key? key,
+    super.key,
     required this.value,
     required this.onValueChanged,
     required this.onConfirm,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

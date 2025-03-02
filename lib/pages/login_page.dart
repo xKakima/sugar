@@ -11,7 +11,6 @@ import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:sugar/utils/constants.dart';
 
 Future<void> _nativeGoogleSignIn(BuildContext context) async {
   late bool isAlreadySignedIn = false;
@@ -21,8 +20,8 @@ Future<void> _nativeGoogleSignIn(BuildContext context) async {
   final GoogleSignIn googleSignIn = GoogleSignIn(
     // ignore: unrelated_type_equality_checks
     clientId: DefaultFirebaseOptions.currentPlatform == TargetPlatform.iOS
-      ? DefaultFirebaseOptions.ios.iosClientId 
-      : DefaultFirebaseOptions.android.androidClientId, 
+        ? DefaultFirebaseOptions.ios.iosClientId
+        : DefaultFirebaseOptions.android.androidClientId,
     serverClientId: webClientId,
   );
 

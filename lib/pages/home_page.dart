@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage> {
         .select("fcm_token")
         .eq("user_id", supabase.auth.currentUser!.id)
         .single();
-    print("USER DATA's FCM TOKEN: ${data}");
+    print("USER DATA's FCM TOKEN: $data");
     // Listen to the auth state changes
     supabase.auth.onAuthStateChange.listen((event) async {
       if (event.event == AuthChangeEvent.signedIn) {

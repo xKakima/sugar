@@ -6,11 +6,11 @@ class SwipeableListItem extends StatelessWidget {
   final Color backgroundColor;
 
   const SwipeableListItem({
-    Key? key,
+    super.key,
     required this.child,
     required this.onSwipe,
     this.backgroundColor = Colors.red,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

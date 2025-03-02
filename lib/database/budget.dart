@@ -93,7 +93,7 @@ Future<PostgrestMap?> fetchBudgetData(String? partnerId) async {
         .select('*')
         .eq('user_id', supabase.auth.currentUser!.id)
         .single();
-    print("Budget from user ${budget}");
+    print("Budget from user $budget");
   } else {
     // If partnerId is not null, filter by both user_id and partner_id
     budget = await supabase

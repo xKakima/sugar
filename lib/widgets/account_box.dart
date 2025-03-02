@@ -12,7 +12,7 @@ class AccountBox extends StatelessWidget {
   final String previousAmount;
 
   const AccountBox({
-    Key? key,
+    super.key,
     required this.id,
     required this.accountName,
     required this.amount,
@@ -21,7 +21,7 @@ class AccountBox extends StatelessWidget {
     required this.onTap,
     this.isEmpty = false,
     this.previousAmount = '0',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

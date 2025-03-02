@@ -57,11 +57,11 @@ Future<void> deleteUserData(String userId) async {
 }
 
 Future<Map<String, dynamic>> insertUserData(String userId) async {
-  print("Insertign user data ${userId}");
+  print("Insertign user data $userId");
   try {
     final response =
         await supabase.from('user_data').insert({'user_id': userId});
-    print("Insert response: ${response}");
+    print("Insert response: $response");
     return {'success': true, 'message': 'Insert successful'};
   } catch (e) {
     print("Error inserting user data: $e");

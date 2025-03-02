@@ -10,7 +10,7 @@ import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/monthly_budget_page.dart';
 
 class InvitePage extends StatefulWidget {
-  InvitePage({Key? key}) : super(key: key);
+  const InvitePage({super.key});
 
   @override
   _InvitePageState createState() => _InvitePageState();

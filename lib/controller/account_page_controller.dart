@@ -1,10 +1,6 @@
-import 'dart:ui';
-
 import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
-import 'package:sugar/pages/account_page.dart';
 import 'package:sugar/utils/utils.dart';
-import 'package:sugar/widgets/account_box.dart';
 
 enum EditingState { editAmount, editAccount }
 

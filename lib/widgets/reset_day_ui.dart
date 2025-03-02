@@ -7,9 +7,9 @@ class ResetDayUI extends StatefulWidget {
   final VoidCallback onConfirm;
 
   const ResetDayUI({
-    Key? key,
+    super.key,
     required this.onConfirm,
-  }) : super(key: key);
+  });
 
   @override
   _ResetDayUIState createState() => _ResetDayUIState();

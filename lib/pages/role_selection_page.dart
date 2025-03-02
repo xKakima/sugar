@@ -23,7 +23,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
     dataStore.setData("userType", role);
 
-    print("upsert response ${upsertResponse}");
+    print("upsert response $upsertResponse");
 
     Get.to(() => InvitePage());
   }

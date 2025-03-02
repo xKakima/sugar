@@ -6,10 +6,10 @@ class Numpad extends StatelessWidget {
   final Function(String) onValueChanged;
   final String initialValue;
   const Numpad({
-    Key? key,
+    super.key,
     required this.onValueChanged,
     this.initialValue = '0',
-  }) : super(key: key);
+  });
   @override
   Widget build(BuildContext context) {
     // Keys for the numpad

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sugar/utils/constants.dart';
 
 double getWidthPercentage(BuildContext context, double percentage) {

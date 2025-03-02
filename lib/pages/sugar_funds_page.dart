@@ -60,7 +60,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
   late final _stream;
 
   void fetchBalance() async {
-    String? partnerId = dataStore.getData("partnerId") ?? null;
+    String? partnerId = dataStore.getData("partnerId");
     dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(partnerId);
   }
 
@@ -87,7 +87,7 @@ class _SugarFundsPageState extends State<SugarFundsPage>
       _stream = supabase.from('expense').stream(primaryKey: ['id']).inFilter(
           'user_id', [
         supabase.auth.currentUser!.id,
-        partnerId!
+        partnerId
       ]).order('created_at', ascending: true);
     }
 
