@@ -60,12 +60,8 @@ class _SugarFundsPageState extends State<SugarFundsPage>
   late final _stream;
 
   void fetchBalance() async {
-    String? partnerId = dataStore.getData("partnerId");
-    if (partnerId != null) {
-      dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(partnerId);
-    } else {
-      dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(null);
-    }
+    String? partnerId = dataStore.getData("partnerId") ?? null;
+    dataStore.sugarFundsBalance.value = await fetchMonthlyBalance(partnerId);
   }
 
   void addExpenseState() {
