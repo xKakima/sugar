@@ -8,6 +8,15 @@ USING ( auth.uid() = auth.users.id );
 CREATE SCHEMA sugar;
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
+-- Unschedule existing job if it exists
+SELECT cron.unschedule('daily_reset_check');
+
+-- Schedule new job to handle both reset and daily budget calculation
+SELECT cron.schedule('daily_reset_check', '0 0 * * *', $$
+    SELECT sugar.check_reset_day();
+    SELECT sugar.check_remaining_daily_budget();
+$$);
+
 SET timezone = 'Asia/Manila';
 
 -- Create Functions
@@ -98,6 +107,18 @@ CREATE TABLE IF NOT EXISTS sugar.expense(
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 alter table sugar.expense replica identity full;
+
+CREATE TABLE IF NOT EXISTS sugar.personal_budget (
+    id UUID NOT NULL UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES sugar.user_data(user_id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    budget NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    balance NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    daily_budget NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES sugar.monthly_budget(user_id)
+);
 
 -- Create Triggers
 CREATE OR REPLACE FUNCTION sugar.update_updated_at_column()
@@ -267,19 +288,40 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION sugar.check_reset_day() 
 RETURNS VOID AS $$
 DECLARE
-    rec sugar.monthly_budget%ROWTYPE; -- Declare rec as a row type of the table
+    rec sugar.monthly_budget%ROWTYPE;
+    days_in_month INTEGER;
+    days_until_next_reset INTEGER;
 BEGIN
     -- Loop through all monthly budgets
     FOR rec IN SELECT * FROM sugar.monthly_budget LOOP
         IF EXTRACT(DAY FROM CURRENT_DATE) = rec.reset_day THEN
-            -- Update the balance to match the budget
+            -- Calculate days until next reset
+            days_in_month := EXTRACT(DAYS FROM DATE_TRUNC('MONTH', CURRENT_DATE + INTERVAL '1 MONTH') - DATE_TRUNC('MONTH', CURRENT_DATE));
+            
+            IF rec.reset_day > EXTRACT(DAY FROM CURRENT_DATE) THEN
+                days_until_next_reset := rec.reset_day - EXTRACT(DAY FROM CURRENT_DATE);
+            ELSE
+                days_until_next_reset := (days_in_month - EXTRACT(DAY FROM CURRENT_DATE) + rec.reset_day)::INTEGER;
+            END IF;
+
+            -- Update the monthly budget balance
             UPDATE sugar.monthly_budget
             SET balance = rec.budget, updated_at = NOW()
             WHERE sugar.monthly_budget.id = rec.id;
 
-            -- Log the update
-            RAISE NOTICE 'Updated row: id=%, user_id=%, budget=%, balance=% at %',
+            -- Update the personal budget balance and initialize daily budget
+            UPDATE sugar.personal_budget
+            SET 
+                balance = budget,
+                daily_budget = ROUND((budget / days_until_next_reset)::NUMERIC, 2),
+                updated_at = NOW()
+            WHERE user_id = rec.user_id;
+
+            -- Log the updates
+            RAISE NOTICE 'Updated monthly budget: id=%, user_id=%, budget=%, balance=% at %',
                 rec.id, rec.user_id, rec.budget, rec.budget, NOW();
+            RAISE NOTICE 'Updated personal budgets for user_id=% with initial daily budget for % days at %',
+                rec.user_id, days_until_next_reset, NOW();
         ELSE
             -- Log skipped rows
             RAISE NOTICE 'Skipped row: id=%, user_id=%, reset_day=% (Today: %)',
@@ -352,6 +394,50 @@ BEGIN
     FROM sugar.expense e
     WHERE e.user_id = _user_id
     OR e.user_id = (SELECT ud.partner_id FROM sugar.user_data ud WHERE ud.user_id = _user_id);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sugar.check_remaining_daily_budget()
+RETURNS VOID AS $$
+DECLARE
+    pb_rec RECORD;
+    days_until_reset INTEGER;
+    current_day INTEGER;
+    reset_day INTEGER;
+BEGIN
+    -- Only run at midnight (00:00)
+    IF EXTRACT(HOUR FROM CURRENT_TIMESTAMP) = 0 AND EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) = 0 THEN
+        -- Loop through all personal budgets
+        FOR pb_rec IN 
+            SELECT pb.*, mb.reset_day 
+            FROM sugar.personal_budget pb
+            JOIN sugar.monthly_budget mb ON pb.user_id = mb.user_id
+        LOOP
+            -- Get current day of month
+            current_day := EXTRACT(DAY FROM CURRENT_DATE);
+            reset_day := pb_rec.reset_day;
+            
+            -- Calculate days until reset
+            IF current_day < reset_day THEN
+                days_until_reset := reset_day - current_day;
+            ELSE
+                -- If we're past reset day, calculate days until next month's reset
+                days_until_reset := (reset_day + EXTRACT(DAYS FROM 
+                    (DATE_TRUNC('MONTH', CURRENT_DATE + INTERVAL '1 MONTH') - CURRENT_DATE)
+                ))::INTEGER;
+            END IF;
+
+            -- Update daily budget
+            IF days_until_reset > 0 THEN
+                UPDATE sugar.personal_budget
+                SET daily_budget = ROUND((balance / days_until_reset)::NUMERIC, 2)
+                WHERE id = pb_rec.id;
+
+                RAISE NOTICE 'Updated daily budget for budget "%(%)" to % (% days until reset)',
+                    pb_rec.name, pb_rec.id, ROUND((pb_rec.balance / days_until_reset)::NUMERIC, 2), days_until_reset;
+            END IF;
+        END LOOP;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
