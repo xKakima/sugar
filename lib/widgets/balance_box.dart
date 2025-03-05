@@ -31,11 +31,22 @@ class _BalanceBoxState extends State<BalanceBox> {
       ? "your sugar baby will appear here"
       : "your sugar daddy will appear here";
 
-  bool _isHidden = false;
+  late bool _isHidden;
+
+  String get _visibilityKey => 'balance_visibility_${widget.title.replaceAll(' ', '_')}';
+
+  @override
+  void initState() {
+    super.initState();
+    print('Getting visibility for ${widget.title}: ${dataStore.getData(_visibilityKey)}');
+    _isHidden = dataStore.getData(_visibilityKey) ?? false;
+  }
 
   void _toggleVisibility() {
     setState(() {
       _isHidden = !_isHidden;
+      print('Setting ${widget.title} visibility to: $_isHidden');
+      dataStore.setData(_visibilityKey, _isHidden);
     });
   }
 
