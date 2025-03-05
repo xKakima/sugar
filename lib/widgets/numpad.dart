@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:sugar/utils/utils.dart';
 
-class Numpad extends StatelessWidget {
+class Numpad extends StatefulWidget {
   final Function(String) onValueChanged;
   final String initialValue;
+
   const Numpad({
     super.key,
     required this.onValueChanged,
     this.initialValue = '0',
   });
+
+  @override
+  State<Numpad> createState() => _NumpadState();
+}
+
+class _NumpadState extends State<Numpad> {
+  bool isFirstInput = true;
+
   @override
   Widget build(BuildContext context) {
     // Keys for the numpad
@@ -25,6 +33,7 @@ class Numpad extends StatelessWidget {
     double buttonHeight =
         buttonWidth * 0.55; // Keep the height a bit less to make it rectangular
     double buttonSpacing = 8.0; // Space between buttons
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: keys.map((row) {
@@ -35,20 +44,40 @@ class Numpad extends StatelessWidget {
             children: row.map((key) {
               return GestureDetector(
                 onTap: () {
+                  print("Key: $key, isFirstInput: $isFirstInput");
+                  if (key != '⌫' && isFirstInput) {
+                    print("Went hereeeee");
+                    setState(() {
+                      isFirstInput = false;
+                    });
+                    widget.onValueChanged(formatStringWithCommas(key));
+                    return;
+                  }
                   if (key == '⌫') {
-                    if (initialValue.length > 1) {
-                      String newValue =
-                          initialValue.substring(0, initialValue.length - 1);
+                    if (widget.initialValue.length > 1) {
+                      String newValue = widget.initialValue
+                          .substring(0, widget.initialValue.length - 1);
                       newValue = formatStringWithCommas(newValue);
-                      onValueChanged(newValue);
+                      widget.onValueChanged(newValue);
                     } else {
-                      onValueChanged('0');
+                      setState(() {
+                        isFirstInput = true;
+                      });
+                      widget.onValueChanged('0');
                     }
                   } else {
-                    String newValue =
-                        initialValue == '0' ? key : initialValue + key;
+                    // Clear the initial value on first input
+                    String newValue;
+                    if (isFirstInput) {
+                      newValue = key;
+                      setState(() {
+                        isFirstInput = false;
+                      });
+                    } else {
+                      newValue = widget.initialValue + key;
+                    }
                     newValue = formatStringWithCommas(newValue);
-                    onValueChanged(newValue);
+                    widget.onValueChanged(newValue);
                   }
                 },
                 child: Container(
