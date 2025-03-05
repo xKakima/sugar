@@ -2,8 +2,11 @@
 
 ## Functionality
 * Delete Prompt on accounts
+    - Done
 * On type, delete text on screen (only for newly opened keyboard)
+    - Done
 * Remove loading time on open
+    - Adjusted to be faster
 
 ## UI
 * Align icons - follow home page layout

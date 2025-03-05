@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controller/data_store_controller.dart';
 import 'package:sugar/controller/sugar_funds_page_controller.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/expense.dart';
@@ -240,12 +239,41 @@ class _SugarFundsPageState extends State<SugarFundsPage>
                               expenses[index], // Display the ExpenseData widget
                           onSwipe: () async {
                             final expenseId = expenses[index].id;
-                            final deleteSuccessful = await deleteExpense(
-                                expenseId); // Perform deletion
-                            if (deleteSuccessful) {
-                              Notifier.show("Expense deleted", 1);
-                            } else {
-                              Notifier.show("Failed to delete expense", 1);
+                            final confirmed = await Get.dialog<bool>(
+                                  AlertDialog(
+                                    backgroundColor: Colors.black,
+                                    title: const Text('Delete Expense',
+                                        style: TextStyle(color: Colors.white)),
+                                    content: const Text(
+                                        'Are you sure you want to delete this expense?',
+                                        style: TextStyle(color: Colors.white)),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Get.back(result: false),
+                                        child: const Text('Cancel',
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Get.back(result: true),
+                                        child: const Text('Delete',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                ) ??
+                                false;
+
+                            if (confirmed) {
+                              final deleteSuccessful =
+                                  await deleteExpense(expenseId);
+                              if (deleteSuccessful) {
+                                Notifier.show("Expense deleted", 1);
+                              } else {
+                                Notifier.show("Failed to delete expense", 1);
+                              }
                             }
                           },
                         );

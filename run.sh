@@ -7,7 +7,10 @@ case $1 in
   "ios")
     flutter run -d BC4BA6BB-F1B1-4E55-A9B3-CEDC76F8DD61
     ;;
+  "phone")
+    flutter run -d 00008130-000405013661001C
+    ;;
   *)
-    echo "Usage: ./run.sh [android|ios]"
+    echo "Usage: ./run.sh [android|ios|phone]"
     ;;
 esac

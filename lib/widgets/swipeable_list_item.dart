@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SwipeableListItem extends StatelessWidget {
   final Widget child;
-  final VoidCallback onSwipe;
+  final Future<void> Function() onSwipe;
   final Color backgroundColor;
 
   const SwipeableListItem({
@@ -26,8 +26,9 @@ class SwipeableListItem extends StatelessWidget {
         ),
       ),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        onSwipe();
+      confirmDismiss: (direction) async {
+        await onSwipe();
+        return false; // Never actually dismiss the item
       },
       child: child,
     );

@@ -9,6 +9,7 @@ import 'package:sugar/pages/account_page.dart';
 import 'package:sugar/pages/sugar_funds_page.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/balance_box.dart';
+import 'package:sugar/widgets/base_page_layout.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/widgets/plus_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
@@ -189,96 +190,100 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Background(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        body: SafeArea(
+      child: BasePageLayout(
+        showFooter: true,
+        // Header: () => const Text('Header'),
+        onFooterButtonPressed: () => Get.to(
+          () => SugarFundsPage(
+            title: 'sugar funds',
+            headerColor: AppColors.sugarFundsBalance.color,
+            fromQuickAddExpense: true,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            formattedDate(),
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
-                              fontSize: 14,
-                            ),
-                          ),
-                          ProfileIcon(),
-                        ],
-                      ),
-                    ),
                     Text(
-                      welcomeText,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                      formattedDate(),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: const Text(
-                        "Budget",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Obx(() => BalanceBox(
-                          title: 'sugar funds',
-                          amount: dataStore.sugarFundsBalance.value,
-                          onTap: () => Get.to(
-                            () => SugarFundsPage(
-                              title: 'sugar funds',
-                              headerColor: AppColors.sugarFundsBalance.color,
-                            ),
-                          ),
-                          color: AppColors.sugarFundsFullBalance.name,
-                        )),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: const Text(
-                        "Balance",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      children: balanceBoxWidgets,
-                    ),
-                    const Spacer(),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: PlusButton(
-                        onPressed: () => Get.to(
-                          () => SugarFundsPage(
-                            title: 'sugar funds',
-                            headerColor: AppColors.sugarFundsBalance.color,
-                            fromQuickAddExpense: true,
-                          ),
-                        ),
-                      ),
-                    ),
+                    ProfileIcon(),
                   ],
                 ),
               ),
-            ),
-          ],
+              Text(
+                welcomeText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: const Text(
+                  "Budget",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Obx(() => BalanceBox(
+                    title: 'sugar funds',
+                    amount: dataStore.sugarFundsBalance.value,
+                    onTap: () => Get.to(
+                      () => SugarFundsPage(
+                        title: 'sugar funds',
+                        headerColor: AppColors.sugarFundsBalance.color,
+                      ),
+                    ),
+                    color: AppColors.sugarFundsFullBalance.name,
+                  )),
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: const Text(
+                  "Balance",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Column(
+                children: balanceBoxWidgets,
+              ),
+              // const Spacer(),
+              // Align(
+              //   alignment: Alignment.bottomCenter,
+              //   child: PlusButton(
+              //     onPressed: () => Get.to(
+              //       () => SugarFundsPage(
+              //         title: 'sugar funds',
+              //         headerColor: AppColors.sugarFundsBalance.color,
+              //         fromQuickAddExpense: true,
+              //       ),
+              //     ),
+              //   ),
+              // ),
+            ],
+          ),
         ),
       ),
-    );
+    ));
   }
 }
