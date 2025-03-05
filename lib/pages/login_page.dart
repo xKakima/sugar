@@ -18,7 +18,8 @@ Future<void> _nativeGoogleSignIn(BuildContext context) async {
   final GoogleSignIn googleSignIn = GoogleSignIn(
     clientId: Theme.of(context).platform == TargetPlatform.iOS
         ? DefaultFirebaseOptions.ios.iosClientId
-        : "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com",
+        : DefaultFirebaseOptions.ios.androidClientId,
+    serverClientId: DefaultFirebaseOptions.ios.androidClientId,
     scopes: ['email', 'profile'],
   );
 
