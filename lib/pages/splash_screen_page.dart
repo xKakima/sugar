@@ -33,8 +33,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Randomize the load time between 3-10 seconds
-    _loadDuration = Random().nextInt(2) + 3;
+    // Randomize the load time between 1-3 seconds
+    _loadDuration = Random().nextInt(2) + 1;
     print('Load duration: $_loadDuration seconds');
 
     // Start loading progress
