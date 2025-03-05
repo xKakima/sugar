@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controller/sugar_funds_page_controller.dart';
+import 'package:sugar/controllers/sugar_funds_page_controller.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/expense.dart';
 import 'package:sugar/utils/constants.dart';

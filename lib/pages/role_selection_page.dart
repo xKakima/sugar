@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/buttons/rectangle_button.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/invite_page.dart';
-import 'package:sugar/widgets/notifier.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});

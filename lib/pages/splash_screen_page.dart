@@ -6,7 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/utils/utils.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
 import 'package:sugar/pages/home_page.dart';

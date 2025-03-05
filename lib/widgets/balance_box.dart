@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 import 'package:sugar/utils/utils.dart';
 
 class BalanceBox extends StatefulWidget {
@@ -33,12 +33,14 @@ class _BalanceBoxState extends State<BalanceBox> {
 
   late bool _isHidden;
 
-  String get _visibilityKey => 'balance_visibility_${widget.title.replaceAll(' ', '_')}';
+  String get _visibilityKey =>
+      'balance_visibility_${widget.title.replaceAll(' ', '_')}';
 
   @override
   void initState() {
     super.initState();
-    print('Getting visibility for ${widget.title}: ${dataStore.getData(_visibilityKey)}');
+    print(
+        'Getting visibility for ${widget.title}: ${dataStore.getData(_visibilityKey)}');
     _isHidden = dataStore.getData(_visibilityKey) ?? false;
   }
 

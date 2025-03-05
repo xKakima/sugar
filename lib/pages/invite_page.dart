@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/buttons/rectangle_button.dart';
 import 'package:sugar/widgets/notifier.dart';

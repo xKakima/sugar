@@ -1,289 +1,44 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
-import 'package:sugar/controller/data_store_controller.dart';
-import 'package:sugar/database/account.dart';
-import 'package:sugar/database/user_data.dart';
-import 'package:sugar/pages/account_page.dart';
+import 'package:sugar/controllers/home_page_controller.dart';
 import 'package:sugar/pages/sugar_funds_page.dart';
-import 'package:sugar/widgets/background.dart';
-import 'package:sugar/widgets/balance_box.dart';
 import 'package:sugar/widgets/base_page_layout.dart';
-import 'package:sugar/widgets/notifier.dart';
-import 'package:sugar/widgets/plus_button.dart';
-import 'package:sugar/widgets/profile_icon.dart';
-import 'package:sugar/utils/utils.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:sugar/utils/constants.dart';
+import 'package:sugar/widgets/home_content.dart';
+import 'package:sugar/widgets/home_header.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
 
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  List<Widget> balanceBoxWidgets = [];
-
-  late String sugarFundsBalance = dataStore.sugarFundsBalance.value;
-  late String welcomeText =
-      dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
-
-  late bool hasPartner = dataStore.getData("partnerId") != null ? true : false;
-
-  late String partnerRole =
-      dataStore.getData("userType") == "DADDY" ? "BABY" : "DADDY";
-
-  String getBalanceBoxTitle(bool isUsersAccount) {
-    if (isUsersAccount) {
-      return dataStore.getData("userType") == "DADDY"
-          ? "sugar daddy balance"
-          : "sugar baby balance";
-    }
-    return dataStore.getData("userType") == "DADDY"
-        ? "sugar baby balance"
-        : "sugar daddy balance";
-  }
-
-  String getBalanceBoxColor(bool isUsersAccount) {
-    if (isUsersAccount) {
-      return dataStore.getData("userType") == "DADDY"
-          ? AppColors.sugarDaddyBalance.name
-          : AppColors.sugarBabyBalance.name;
-    }
-    return dataStore.getData("userType") == "DADDY"
-        ? AppColors.sugarBabyBalance.name
-        : AppColors.sugarDaddyBalance.name;
-  }
-
-  Future<double> getAccountBalanceTotal(bool isUserAccount) async {
-    final response = await fetchAccountsTotal(isUserAccount);
-
-    print(response);
-    return response;
-  }
-
-  Future<List<Widget>> balanceBoxes() async {
-    if (!hasPartner) {
-      return [
-        BalanceBox(
-          title: getBalanceBoxTitle(true),
-          amount: convertAndFormatToString(await getAccountBalanceTotal(true)),
-          onTap: () async {
-            await Get.to(
-              () => AccountPage(
-                title: getBalanceBoxTitle(true),
-                headerColor: getBalanceBoxColor(true),
-                userId: supabase.auth.currentUser!.id,
-                isUserAccount: true,
-              ),
-              transition: Transition.upToDown,
-            );
-            await _refreshBalance(); // Refresh on return
-          },
-          color: getBalanceBoxColor(true),
-        ),
-        const SizedBox(height: 8),
-        BalanceBox(
-          title: '',
-          amount: '0',
-          onTap: () => {},
-          color: getBalanceBoxColor(false),
-          hasNoLink: true,
-        ),
-        const SizedBox(height: 16),
-      ];
-    }
-
-    return [
-      BalanceBox(
-        title: getBalanceBoxTitle(true),
-        amount: convertAndFormatToString(await getAccountBalanceTotal(true)),
-        onTap: () async {
-          await Get.to(
-            () => AccountPage(
-              title: getBalanceBoxTitle(true),
-              headerColor: getBalanceBoxColor(true),
-              userId: supabase.auth.currentUser!.id,
-              isUserAccount: true,
-            ),
-            transition: Transition.upToDown,
-          );
-          await _refreshBalance(); // Refresh on return
-        },
-        color: getBalanceBoxColor(true),
-      ),
-      const SizedBox(height: 8),
-      BalanceBox(
-        title: getBalanceBoxTitle(false),
-        amount: convertAndFormatToString(await getAccountBalanceTotal(false)),
-        onTap: () async {
-          await Get.to(
-            () => AccountPage(
-              title: getBalanceBoxTitle(false),
-              headerColor: getBalanceBoxColor(false),
-              userId: dataStore.getData("partnerId"),
-              isUserAccount: false,
-            ),
-            transition: Transition.upToDown,
-          );
-          await _refreshBalance(); // Refresh on return
-        },
-        color: getBalanceBoxColor(false),
-      ),
-      const SizedBox(height: 16),
-    ];
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeApp();
-    _refreshBalance(); // Initial load only here
-    print(
-        "User Type: ${dataStore.getData("userType")}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-  }
-
-  Future<void> _refreshBalance() async {
-    final boxes = await balanceBoxes();
-    setState(() {
-      balanceBoxWidgets = boxes;
-    });
-  }
-
-  void _initializeApp() async {
-    final data = await supabase
-        .from("user_data")
-        .select("fcm_token")
-        .eq("user_id", supabase.auth.currentUser!.id)
-        .single();
-    print("USER DATA's FCM TOKEN: $data");
-    // Listen to the auth state changes
-    supabase.auth.onAuthStateChange.listen((event) async {
-      if (event.event == AuthChangeEvent.signedIn) {
-        await FirebaseMessaging.instance.requestPermission();
-        await FirebaseMessaging.instance.getAPNSToken();
-
-        final fcmToken = await FirebaseMessaging.instance.getToken();
-        if (fcmToken != null) {
-          await upsertUserData({"fcm_token": fcmToken});
-        }
-      }
-    });
-
-    // Handle token refresh
-    FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) async {
-      await upsertUserData({"fcm_token": fcmToken});
-    });
-
-    FirebaseMessaging.onMessage.listen((payload) {
-      final notification = payload.notification;
-      if (notification == null) return;
-
-      Notifier.show(notification.body ?? '', 3,
-          title: notification.title ?? '');
-    });
-  }
+  final controller = Get.put(HomePageController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(
-      child: BasePageLayout(
-        showFooter: true,
-        // Header: () => const Text('Header'),
-        onFooterButtonPressed: () => Get.to(
-          () => SugarFundsPage(
-            title: 'sugar funds',
-            headerColor: AppColors.sugarFundsBalance.color,
-            fromQuickAddExpense: true,
+      body: SafeArea(
+        child: BasePageLayout(
+          showFooter: true,
+          header: HomeHeader(
+            welcomeText: controller.welcomeText,
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      formattedDate(),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 14,
-                      ),
-                    ),
-                    ProfileIcon(),
-                  ],
-                ),
+          onFooterButtonPressed: () => Get.to(
+            () => SugarFundsPage(
+              title: 'sugar funds',
+              headerColor: AppColors.sugarFundsBalance.color,
+              fromQuickAddExpense: true,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Obx(
+              () => HomeContent(
+                sugarFundsBalance: controller.sugarFundsBalance.value,
+                balanceBoxWidgets: controller.balanceBoxWidgets,
               ),
-              Text(
-                welcomeText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: const Text(
-                  "Budget",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Obx(() => BalanceBox(
-                    title: 'sugar funds',
-                    amount: dataStore.sugarFundsBalance.value,
-                    onTap: () => Get.to(
-                      () => SugarFundsPage(
-                        title: 'sugar funds',
-                        headerColor: AppColors.sugarFundsBalance.color,
-                      ),
-                    ),
-                    color: AppColors.sugarFundsFullBalance.name,
-                  )),
-              Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: const Text(
-                  "Balance",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Column(
-                children: balanceBoxWidgets,
-              ),
-              // const Spacer(),
-              // Align(
-              //   alignment: Alignment.bottomCenter,
-              //   child: PlusButton(
-              //     onPressed: () => Get.to(
-              //       () => SugarFundsPage(
-              //         title: 'sugar funds',
-              //         headerColor: AppColors.sugarFundsBalance.color,
-              //         fromQuickAddExpense: true,
-              //       ),
-              //     ),
-              //   ),
-              // ),
-            ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }

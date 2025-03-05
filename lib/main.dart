@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sugar/firebase_options.dart';
 import 'package:sugar/pages/splash_screen_page.dart';

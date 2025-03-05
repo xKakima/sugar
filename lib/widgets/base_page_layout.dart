@@ -7,6 +7,7 @@ class BasePageLayout extends StatelessWidget {
   final bool showHeader;
   final bool showFooter;
   final VoidCallback? onFooterButtonPressed;
+  final Widget? header;
 
   const BasePageLayout({
     super.key,
@@ -14,6 +15,7 @@ class BasePageLayout extends StatelessWidget {
     this.showHeader = true,
     this.showFooter = false,
     this.onFooterButtonPressed,
+    this.header,
   });
 
   @override
@@ -22,22 +24,22 @@ class BasePageLayout extends StatelessWidget {
       child: Stack(
         children: [
           Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (showHeader)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('Header'), // Replace with your actual header
-                ),
-              const Spacer(),
-              if (showFooter)
+              if (showHeader && header != null)
                 Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Footer(onPressed: onFooterButtonPressed),
+                  child: header!,
                 ),
+              Expanded(child: child),
             ],
           ),
-          child,
+          if (showFooter)
+            Positioned(
+              bottom: 16.0,
+              left: 0,
+              right: 0,
+              child: Center(child: Footer(onPressed: onFooterButtonPressed)),
+            ),
         ],
       ),
     );

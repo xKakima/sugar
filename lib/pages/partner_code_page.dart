@@ -7,7 +7,7 @@ import 'package:sugar/pages/role_selection_page.dart';
 import 'package:sugar/widgets/background.dart';
 import 'package:sugar/widgets/notifier.dart';
 import 'package:sugar/utils/utils.dart';
-import 'package:sugar/controller/data_store_controller.dart';
+import 'package:sugar/controllers/data_store_controller.dart';
 
 class PartnerCodePage extends StatefulWidget {
   const PartnerCodePage({super.key});

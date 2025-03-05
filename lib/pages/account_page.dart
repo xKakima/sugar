@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sugar/constants/app_colors.dart';
-import 'package:sugar/controller/account_page_controller.dart';
+import 'package:sugar/controllers/account_page_controller.dart';
 import 'package:sugar/database/account.dart';
 import 'package:sugar/utils/constants.dart';
 import 'package:sugar/widgets/account_box.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controller/sugar_funds_page_controller.dart';
+import 'package:sugar/controllers/sugar_funds_page_controller.dart';
 import 'package:sugar/widgets/buttons/back_button.dart';
 import 'package:sugar/widgets/profile_icon.dart';
 import 'package:sugar/utils/utils.dart';
