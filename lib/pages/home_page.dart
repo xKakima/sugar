@@ -34,6 +34,7 @@ class HomePage extends StatelessWidget {
               () => HomeContent(
                 sugarFundsBalance: controller.sugarFundsBalance.value,
                 balanceBoxWidgets: controller.balanceBoxWidgets,
+                isLoading: controller.isLoading.value,
               ),
             ),
           ),

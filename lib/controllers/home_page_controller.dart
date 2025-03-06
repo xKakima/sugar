@@ -14,6 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class HomePageController extends GetxController {
   RxList<Widget> balanceBoxWidgets = <Widget>[].obs;
   RxString sugarFundsBalance = dataStore.sugarFundsBalance;
+  RxBool isLoading = true.obs;
 
   late String welcomeText =
       dataStore.getData("userType") == "DADDY" ? "Hi, Daddy!" : "Hi, Baby!";
@@ -106,8 +107,22 @@ class HomePageController extends GetxController {
   }
 
   Future<void> refreshBalance() async {
-    final boxes = await _buildBalanceBoxes();
-    balanceBoxWidgets.value = boxes;
+    try {
+      isLoading.value = true;
+      print("Starting to refresh balance...");
+      final userBalance = await getAccountBalanceTotal(true);
+      print("User balance: $userBalance");
+      
+      final boxes = await _buildBalanceBoxes();
+      print("BUILDING BALANCE BOXES: $boxes");
+      print("Has partner: $hasPartner");
+      
+      balanceBoxWidgets.value = boxes;
+    } catch (e) {
+      print("Error refreshing balance: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> _navigateToAccountPage(bool isUserAccount) async {

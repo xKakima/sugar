@@ -33,7 +33,6 @@ Future<double> fetchAccountsTotal(bool forCurrentUser) async {
 
   final response =
       await supabase.from('account').select('balance').eq('user_id', userId);
-  print("fetchAccountsTotal: $response");
   if (response.isEmpty) return 0.0;
 
   late double total = 0.0;

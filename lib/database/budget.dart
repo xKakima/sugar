@@ -66,10 +66,8 @@ Future<String> fetchMonthlyBalance(String? partnerId) async {
         'user_id.eq.${supabase.auth.currentUser!.id},user_id.eq.$partnerId');
 
     if (budget[0]['user_id'] == supabase.auth.currentUser!.id) {
-      print("budget owner is user");
       dataStore.setData("budgetOwner", 'user');
     } else if (budget[0]['user_id'] == partnerId) {
-      print("budget owner is partner");
       dataStore.setData("budgetOwner", 'partner');
     }
   }

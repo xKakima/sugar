@@ -109,7 +109,6 @@ class _AccountPageState extends State<AccountPage>
   Future<void> getAccountBalanceTotal() async {
     final response = await fetchAccountsTotal(widget.isUserAccount);
     _accountAmount = convertAndFormatToString(response);
-    print("Account Amount: $_accountAmount");
     setState(() {}); // Call setState to update the UI after fetching the total
   }
 

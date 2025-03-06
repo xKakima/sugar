@@ -35,7 +35,6 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     // Randomize the load time between 1-3 seconds
     _loadDuration = Random().nextInt(2) + 1;
-    print('Load duration: $_loadDuration seconds');
 
     // Start loading progress
     _startLoading();
@@ -45,7 +44,6 @@ class _SplashScreenState extends State<SplashScreen> {
     // Check the login status
     final prefs = await SharedPreferences.getInstance();
     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    print('Is logged in: $isLoggedIn');
 
     // 50 ms interval between each tick
     const duration = Duration(milliseconds: 50);
@@ -71,9 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _redirect(isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
-    print("Is logged in: $isLoggedIn");
     if (!isLoggedIn) {
-      print("Not logged in, redirecting to login page");
       Get.to(() => LoginPage());
       return;
     }
@@ -96,9 +92,7 @@ class _SplashScreenState extends State<SplashScreen> {
         );
 
         final userData = await fetchUserData();
-        print(userData);
         if (userData.isEmpty || userData['user_id'] == null) {
-          print("User data is empty, redirecting to login page");
           Get.to(() => LoginPage());
           return;
         }
@@ -113,18 +107,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
         dataStore.sugarFundsBalance.value = balance;
         dataStore.setData("userType", userData['user_type'].toString());
-        print("Should go here home page");
         Get.to(() => HomePage());
         return;
       } else {
         // Sign-in failed silently, handle the situation (e.g., log out the user or prompt for login again)
-        print("Silent sign-in failed, please login again.");
         await logout(); // Call a logout function if needed
-        print('Sign in silently failed, redirecting to login page');
         Get.to(() => LoginPage());
       }
     } catch (e) {
-      print(e);
+      await logout(); // Call a logout function if needed
+      Get.to(() => LoginPage());
     }
   }
 

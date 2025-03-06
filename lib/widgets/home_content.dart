@@ -7,11 +7,13 @@ import 'package:sugar/widgets/balance_box.dart';
 class HomeContent extends StatelessWidget {
   final String sugarFundsBalance;
   final List<Widget> balanceBoxWidgets;
+  final bool isLoading;
 
   const HomeContent({
     super.key,
     required this.sugarFundsBalance,
     required this.balanceBoxWidgets,
+    this.isLoading = false,
   });
 
   @override
@@ -52,9 +54,14 @@ class HomeContent extends StatelessWidget {
             ),
           ),
         ),
-        Column(
-          children: balanceBoxWidgets,
-        ),
+        if (isLoading)
+          const Center(
+            child: CircularProgressIndicator(),
+          )
+        else
+          Column(
+            children: balanceBoxWidgets,
+          ),
       ],
     );
   }
