@@ -112,11 +112,11 @@ class HomePageController extends GetxController {
       print("Starting to refresh balance...");
       final userBalance = await getAccountBalanceTotal(true);
       print("User balance: $userBalance");
-      
+
       final boxes = await _buildBalanceBoxes();
       print("BUILDING BALANCE BOXES: $boxes");
       print("Has partner: $hasPartner");
-      
+
       balanceBoxWidgets.value = boxes;
     } catch (e) {
       print("Error refreshing balance: $e");
@@ -135,7 +135,6 @@ class HomePageController extends GetxController {
             : dataStore.getData("partnerId"),
         isUserAccount: isUserAccount,
       ),
-      transition: Transition.upToDown,
     );
   }
 
