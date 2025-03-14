@@ -8,32 +8,31 @@ class Background extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight, // Fill the available height
-              minWidth: constraints.maxWidth, // Fill the available width
-            ),
-            child: IntrinsicHeight(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.background.color,
-                ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background.color,
+      ),
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+                minWidth: constraints.maxWidth,
+              ),
+              child: IntrinsicHeight(
                 child: Column(
-                  mainAxisSize:
-                      MainAxisSize.max, // Take the full vertical space
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Expanded(
-                      child: child, // Main content to fit within the layout
+                      child: child,
                     ),
                   ],
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
