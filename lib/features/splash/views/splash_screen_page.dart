@@ -57,7 +57,7 @@ class SplashScreenState extends State<SplashScreen>
   Future<void> _redirect(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
     if (!isLoggedIn) {
-      Get.to(() => LoginPage());
+      Get.offAll(() => LoginPage());
       return;
     }
     try {
@@ -90,14 +90,14 @@ class SplashScreenState extends State<SplashScreen>
 
         dataStore.sugarFundsBalance.value = balance;
         dataStore.setData("userType", userData['user_type'].toString());
-        Get.to(() => HomePage());
+        Get.offAll(() => HomePage());
       } else {
         await logout();
-        Get.to(() => LoginPage());
+        Get.offAll(() => LoginPage());
       }
     } catch (e) {
       await logout();
-      Get.to(() => LoginPage());
+      Get.offAll(() => LoginPage());
     }
   }
 
@@ -153,7 +153,7 @@ class SplashScreenState extends State<SplashScreen>
                               borderRadius: BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.4),
+                                  color: Colors.white.withValues(alpha: 0.4),
                                   blurRadius: 6,
                                   spreadRadius: 2,
                                 ),
