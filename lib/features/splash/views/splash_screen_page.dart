@@ -1,11 +1,10 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sugar/shared/widgets/background.dart';
 import 'package:sugar/shared/utils/utils.dart';
+import 'package:sugar/shared/widgets/background.dart';
 import 'package:sugar/core/services/data_store_controller.dart';
 import 'package:sugar/core/database/budget.dart';
 import 'package:sugar/core/database/user_data.dart';
@@ -21,45 +20,41 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   final dataStore = Get.find<DataStoreController>();
-  double _progress = 0.0;
-  late Timer _timer;
+  late AnimationController _animationController;
+  late Animation<double> _progressAnimation;
   late int _loadDuration;
 
   @override
   void initState() {
     super.initState();
-    _loadDuration = Random().nextInt(2) + 1;
+
+    _loadDuration = Random().nextInt(2) + 1; // 1 to 2 seconds
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: _loadDuration),
+    );
+
+    _progressAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
     _startLoading();
   }
 
   Future<void> _startLoading() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    const duration =
-        Duration(milliseconds: 16); // ~60 FPS for smoother animation
-    final totalTicks = _loadDuration * 1000 / duration.inMilliseconds;
-
-    // Start with a quick initial progress
-    setState(() => _progress = 0.1);
-
-    _timer = Timer.periodic(duration, (Timer timer) {
-      setState(() {
-        // Use a curved animation for more natural feel
-        final targetProgress = _progress + (1.5 / totalTicks);
-        _progress = _progress + (targetProgress - _progress) * 0.3;
-
-        if (_progress >= 0.99) {
-          _progress = 1.0;
-          _timer.cancel();
-          _redirect(isLoggedIn);
-        }
-      });
+    _animationController.forward().whenComplete(() async {
+      final prefs = await SharedPreferences.getInstance();
+      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      _redirect(isLoggedIn);
     });
   }
 
-  Future<void> _redirect(isLoggedIn) async {
+  Future<void> _redirect(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
     if (!isLoggedIn) {
       Get.to(() => LoginPage());
@@ -108,7 +103,7 @@ class SplashScreenState extends State<SplashScreen> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -130,65 +125,45 @@ class SplashScreenState extends State<SplashScreen> {
               Positioned(
                 bottom: MediaQuery.of(context).size.height * 0.15,
                 right: MediaQuery.of(context).size.width * 0.08,
-                child: TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  tween: Tween<double>(
-                    begin: 0.0,
-                    end: _progress,
-                  ),
-                  builder: (context, value, child) => Container(
-                    width: MediaQuery.of(context).size.width * 0.2,
-                    height: 25,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(26), // 0.1 opacity = 26/255
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                          spreadRadius: value * 2,
-                        ),
-                      ],
+                child: Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    // Background bar (empty state)
+                    Image.asset(
+                      'assets/images/loading_bar.png',
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      height: 25,
+                      fit: BoxFit.contain,
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      children: [
-                        // Background (Grey loading bar)
-                        Container(
-                          color: Colors.grey[300],
-                        ),
-                        // White progress fill with gradient
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: FractionallySizedBox(
-                            widthFactor: _progress,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    Colors.white,
-                                    Colors.white.withAlpha(230), // 0.9 opacity = 230/255
-                                  ],
+
+                    // Expanding fill effect (now properly timed)
+                    AnimatedBuilder(
+                      animation: _progressAnimation,
+                      builder: (context, child) => ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Container(
+                            width:
+                                (MediaQuery.of(context).size.width * 0.2 - 8) *
+                                    _progressAnimation.value,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.4),
+                                  blurRadius: 6,
+                                  spreadRadius: 2,
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         ),
-                        // Loading bar shape mask
-                        Image.asset(
-                          'assets/images/loading_bar.png',
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.fill,
-                          color: Colors.white,
-                          colorBlendMode: BlendMode.dstIn,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               )
             ],
