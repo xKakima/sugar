@@ -22,9 +22,9 @@ class _NumpadState extends State<Numpad> {
   Widget build(BuildContext context) {
     // Keys for the numpad
     final List<List<String>> keys = [
-      ['7', '8', '9'],
-      ['4', '5', '6'],
       ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
       ['.', '0', '⌫'],
     ];
     // Adjust sizes based on screen width for responsiveness
