@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:sugar/core/services/data_store_controller.dart';
+import 'package:sugar/shared/constants/app_colors.dart';
+import 'package:sugar/shared/utils/utils.dart';
+
+class BalanceBox extends StatefulWidget {
+  final String title;
+  final String amount;
+  final VoidCallback onTap;
+  final String color;
+  final bool hasNoLink;
+
+  const BalanceBox({
+    super.key,
+    required this.title,
+    required this.amount,
+    required this.onTap,
+    required this.color,
+    this.hasNoLink = false,
+  });
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _BalanceBoxState createState() => _BalanceBoxState();
+}
+
+class _BalanceBoxState extends State<BalanceBox> {
+  final dataStore = Get.find<DataStoreController>();
+  late String noLinkedAccountText = dataStore.getData("userType") == "DADDY"
+      ? "your sugar baby will appear here"
+      : "your sugar daddy will appear here";
+
+  late bool _isHidden;
+
+  String get _visibilityKey =>
+      'balance_visibility_${widget.title.replaceAll(' ', '_')}';
+
+  @override
+  void initState() {
+    super.initState();
+    _isHidden = dataStore.getData(_visibilityKey) ?? false;
+  }
+
+  void _toggleVisibility() {
+    setState(() {
+      _isHidden = !_isHidden;
+      dataStore.setData(_visibilityKey, _isHidden);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.hasNoLink ? null : widget.onTap,
+      child: widget.hasNoLink ? _buildEmptyBalanceBox() : _buildBalanceBox(),
+    );
+  }
+
+  Widget _buildEmptyBalanceBox() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
+      width: double.infinity,
+      height: getHeightPercentage(context, 13),
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 83, 83, 83),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Title Text
+              Expanded(
+                child: Text(
+                  noLinkedAccountText,
+                  style: TextStyle(
+                    //Add opacity
+                    color: Colors.white.withAlpha(153), // 0.6 opacity = 153/255
+                    fontSize: 14, // Smaller font size
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBalanceBox() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColorExtension.fromName(widget.color),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // Title Text
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14, // Smaller font size
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Visibility Toggle Icon
+              IconButton(
+                icon: Icon(
+                  _isHidden ? Icons.visibility_off : Icons.visibility,
+                  size: 18, // Smaller icon
+                  color: Colors.white,
+                ),
+                onPressed: _toggleVisibility,
+              ),
+            ],
+          ),
+          // Amount Text
+          Row(
+            children: [
+              const Spacer(),
+              Text(
+                _isHidden
+                    ? '••••••'
+                    : 'PHP ${formatStringWithCommas(widget.amount)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24, // Smaller font size for amount
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

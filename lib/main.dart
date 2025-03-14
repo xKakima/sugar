@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:sugar/controllers/data_store_controller.dart';
+import 'package:sugar/core/services/data_store_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sugar/firebase_options.dart';
-import 'package:sugar/pages/splash_screen_page.dart';
+import 'package:sugar/features/splash/views/splash_screen_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -18,7 +18,9 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     postgrestOptions: const PostgrestClientOptions(schema: 'sugar'),
   );
-  Get.put(DataStoreController());
+  final dataStore = Get.put(DataStoreController());
+  // Make dataStore globally accessible
+  Get.put(dataStore, permanent: true);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
