@@ -12,6 +12,7 @@ import 'package:sugar/features/sugar_funds/views/sugar_funds_page_header.dart';
 import 'package:sugar/shared/utils/utils.dart';
 import 'package:sugar/shared/widgets/swipeable_list_item.dart';
 import 'package:sugar/core/services/data_store_controller.dart';
+import 'package:sugar/shared/widgets/background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SugarFundsPage extends StatefulWidget {
@@ -137,39 +138,41 @@ class SugarFundsPageState extends State<SugarFundsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-          stream: _stream,
-          builder: (context, snapshot) {
-            late List<ExpenseData> expenses = [];
-            // Handle errors first
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+      body: Background(
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _stream,
+            builder: (context, snapshot) {
+              late List<ExpenseData> expenses = [];
+              // Handle errors first
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
 
-            // Check if the data is still being loaded
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
+              // Check if the data is still being loaded
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-            if (snapshot.hasData) {
-              expenses = snapshot.data!
-                  .map((data) => ExpenseData.fromMap(data))
-                  .toList();
+              if (snapshot.hasData) {
+                expenses = snapshot.data!
+                    .map((data) => ExpenseData.fromMap(data))
+                    .toList();
 
-              // Update balance when expenses change
-              fetchBalance();
-            }
+                // Update balance when expenses change
+                fetchBalance();
+              }
 
-            expenses.sort((a, b) => b.date.compareTo(a.date));
+              expenses.sort((a, b) => b.date.compareTo(a.date));
 
-            return Stack(
-              children: [
-                Container(color: widget.headerColor), // Background color
-                _buildHeader(),
-                _buildAnimatedContainer(expenses),
-              ],
-            );
-          }),
+              return Stack(
+                children: [
+                  Container(color: widget.headerColor), // Background color
+                  _buildHeader(),
+                  _buildAnimatedContainer(expenses),
+                ],
+              );
+            }),
+      ),
     );
   }
 
@@ -181,8 +184,7 @@ class SugarFundsPageState extends State<SugarFundsPage>
               padding: const EdgeInsets.all(16.0),
               child: SugarFundsPageHeader(
                 title: widget.title,
-                balance:
-                    dataStore.sugarFundsBalance.value,
+                balance: dataStore.sugarFundsBalance.value,
                 isExpanded: widget.controller.isExpanded
                     .value, // React to the isExpanded state
               ),

@@ -1,13 +1,13 @@
 // profile_icon.dart
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:sugar/features/splash/views/splash_screen_page.dart';
+import 'package:sugar/shared/utils/utils.dart';
 
 class ProfileIcon extends StatelessWidget {
   const ProfileIcon({super.key});
 
   void _navigateToProfile(BuildContext context) {
-    Get.to(() => const SplashScreen());
+    logout();
+    // Get.to(() => const SplashScreen());
     // showDialog(
     //   context: context,
     //   builder: (BuildContext context) {

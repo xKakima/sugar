@@ -25,6 +25,7 @@ class SugarFundsPageController extends GetxController {
   final RxString expenseType = "".obs;
   final RxDouble sugarFundsBalance = 0.0.obs;
   final RxBool isExpenseSummed = false.obs;
+  final RxInt refreshKey = 0.obs;
 
   @override
   void onInit() {
@@ -32,14 +33,15 @@ class SugarFundsPageController extends GetxController {
     fetchBalance();
   }
 
-  // Stream for real-time expense updates
-  Stream<List<Map<String, dynamic>>> get expenseStream {
+  // Fetch expenses
+  Future<List<Map<String, dynamic>>> fetchExpenses() async {
     final supabase = Supabase.instance.client;
-    return supabase
+    final response = await supabase
         .from('expense')
-        .stream(primaryKey: ['id'])
+        .select()
         .eq('user_id', supabase.auth.currentUser!.id)
-        .order('created_at', ascending: true);
+        .order('created_at', ascending: false);
+    return response;
   }
 
   // UI State Management
@@ -69,7 +71,10 @@ class SugarFundsPageController extends GetxController {
   Future<Map<String, dynamic>> createExpense() async {
     if (expenseAmount.value == "0" || expenseType.value.isEmpty) {
       Notifier.show("Please enter amount and select type", 1);
-      return {"success": false, "message": "Please enter amount and select type"};
+      return {
+        "success": false,
+        "message": "Please enter amount and select type"
+      };
     }
 
     try {
@@ -77,6 +82,7 @@ class SugarFundsPageController extends GetxController {
       final response = await expense_db.addExpense(expenseData);
       if (response['success']) {
         await fetchBalance();
+        refreshKey.value++;
         Notifier.show("Expense added successfully", 1);
         resetExpenseInputs();
       }
@@ -91,6 +97,7 @@ class SugarFundsPageController extends GetxController {
     try {
       await expense_db.deleteExpense(expenseId);
       await fetchBalance();
+      refreshKey.value++;
       Notifier.show("Expense deleted", 1);
     } catch (e) {
       Notifier.show("Failed to delete expense", 1);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sugar/shared/utils/utils.dart';
+import 'package:sugar/shared/widgets/header.dart';
 import 'package:sugar/shared/widgets/profile_icon.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -12,34 +13,26 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                formattedDate(),
-                style: TextStyle(
-                  color: Colors.white.withAlpha(153), // 0.6 opacity = 153/255
-                  fontSize: 14,
-                ),
-              ),
-              const ProfileIcon(),
-            ],
+    return Header(
+      title: welcomeText,
+      leading: Row(
+        children: [
+          Image.asset(
+            'assets/images/sugar_cube.png',
+            width: 40,
+            height: 40,
           ),
-        ),
-        Text(
-          welcomeText,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+          const SizedBox(width: 8),
+          Text(
+            formattedDate(),
+            style: TextStyle(
+              color: Colors.white.withAlpha(153),
+              fontSize: 14,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+      trailing: const ProfileIcon(),
     );
   }
 }

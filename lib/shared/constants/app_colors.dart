@@ -7,6 +7,10 @@ enum AppColors {
   sugarFundsFullBalance(Color.fromARGB(255, 88, 163, 164)),
   sugarFundsHalfBalance(Color.fromARGB(255, 163, 156, 88)),
   sugarFundsEmptyBalance(Color.fromARGB(255, 163, 88, 88)),
+  budgetedFundsFullBalance(Color.fromARGB(255, 88, 163, 164)),
+  budgetedFundsHalfBalance(Color.fromARGB(255, 163, 156, 88)),
+  budgetedFundsEmptyBalance(Color.fromARGB(255, 163, 88, 88)),
+  budgetedFundsHeader(Color.fromARGB(255, 55, 55, 55)),
   roundedContainer(Color.fromARGB(255, 30, 30, 30)),
   background(Color(0xFF1F1F1F)),
   accountBoxDefault(Color.fromARGB(255, 61, 61, 61)),
@@ -52,6 +56,14 @@ extension AppColorExtension on AppColors {
         return 'accountBox5';
       case AppColors.accountBox6:
         return 'accountBox6';
+      case AppColors.budgetedFundsFullBalance:
+        return 'budgetedFundsFullBalance';
+      case AppColors.budgetedFundsHalfBalance:
+        return 'budgetedFundsHalfBalance';
+      case AppColors.budgetedFundsEmptyBalance:
+        return 'budgetedFundsEmptyBalance';
+      case AppColors.budgetedFundsHeader:
+        return 'budgetedFundsHeader';
     }
   }
 

@@ -7,13 +7,17 @@ Future<Map<String, dynamic>> upsertExpense(
     expenseData['user_id'] = supabase.auth.currentUser!.id;
     await supabase.from('expense').upsert(expenseData);
 
-    final response = await supabase.from('expense').select().eq('id', expenseData['id']);
+    final response =
+        await supabase.from('expense').select().eq('id', expenseData['id']);
     if (response.isEmpty) {
       return {"success": false, "message": 'Failed to verify upsert'};
     }
     return {"success": true, "message": 'Upsert successful'};
   } catch (e) {
-    return {"success": false, "message": 'Failed to upsert expense: ${e.toString()}'};
+    return {
+      "success": false,
+      "message": 'Failed to upsert expense: ${e.toString()}'
+    };
   }
 }
 
@@ -31,14 +35,21 @@ Future<dynamic> addExpense(Map<String, dynamic> expenseData) async {
     // add user_id to userData
     expenseData['user_id'] = supabase.auth.currentUser!.id;
     // Validate expense data
-    if (!expenseData.containsKey('amount') || !expenseData.containsKey('expense_type')) {
-      return {"success": false, "message": 'Missing required fields: amount or expense_type'};
+    if (!expenseData.containsKey('amount') ||
+        !expenseData.containsKey('expense_type')) {
+      return {
+        "success": false,
+        "message": 'Missing required fields: amount or expense_type'
+      };
     }
 
     await supabase.from('expense').insert(expenseData);
     return {"success": true, "message": 'Insert successful'};
   } catch (e) {
-    return {"success": false, "message": 'Failed to insert expense: ${e.toString()}'};
+    return {
+      "success": false,
+      "message": 'Failed to insert expense: ${e.toString()}'
+    };
   }
 }
 

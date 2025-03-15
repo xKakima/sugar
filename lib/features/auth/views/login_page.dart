@@ -82,7 +82,7 @@ Future<void> _nativeGoogleSignIn(BuildContext context) async {
     );
 
     if (isAlreadySignedIn) {
-      Get.to(() => HomePage());
+      Get.offAll(() => HomePage());
     } else {
       Get.to(() => PartnerCodePage());
     }
@@ -115,7 +115,7 @@ class LoginPage extends StatelessWidget {
                   SizedBox(
                       height: textTopPadding), // Space above the login text
                   const Text(
-                    'login.',
+                    'Welcome!',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 32,

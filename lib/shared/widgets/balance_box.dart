@@ -111,7 +111,7 @@ class _BalanceBoxState extends State<BalanceBox> {
                   widget.title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14, // Smaller font size
+                    fontSize: 16, // Smaller font size
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -138,7 +138,7 @@ class _BalanceBoxState extends State<BalanceBox> {
                     : 'PHP ${formatStringWithCommas(widget.amount)}',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 24, // Smaller font size for amount
+                  fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
               ),

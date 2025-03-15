@@ -3,14 +3,19 @@ import 'package:sugar/shared/constants/app_colors.dart';
 
 class Background extends StatelessWidget {
   final Widget child;
+  final Color? backgroundColor;
 
-  const Background({super.key, required this.child});
+  const Background({
+    super.key,
+    required this.child,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.color,
+        color: backgroundColor ?? AppColors.background.color,
       ),
       child: SafeArea(
         child: LayoutBuilder(
