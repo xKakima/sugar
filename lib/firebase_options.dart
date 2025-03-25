@@ -68,8 +68,8 @@ class DefaultFirebaseOptions {
     iosClientId: '511559276850-8bk879oh50pnmc1npu3tj7ea4qdc1j9n.apps.googleusercontent.com',
     iosBundleId: 'com.venxkakima.sugar',
   );
-  
 
+  
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD_lrT8ynr1b4e_EW-V3qTiAT0pFyJpeLs',

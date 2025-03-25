@@ -4,7 +4,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sugar/database/budget.dart';
 import 'package:sugar/database/user_data.dart';
-import 'package:sugar/firebase_options.dart';
 import 'package:sugar/pages/home_page.dart';
 import 'package:sugar/pages/partner_code_page.dart';
 import 'package:sugar/utils/constants.dart';
@@ -16,10 +15,8 @@ Future<void> _nativeGoogleSignIn(BuildContext context) async {
   late bool isAlreadySignedIn = false;
   print(Theme.of(context).platform);
   final GoogleSignIn googleSignIn = GoogleSignIn(
-    clientId: Theme.of(context).platform == TargetPlatform.iOS
-        ? DefaultFirebaseOptions.ios.iosClientId
-        : DefaultFirebaseOptions.ios.androidClientId,
-    serverClientId: DefaultFirebaseOptions.ios.androidClientId,
+    serverClientId:
+        '511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com',
     scopes: ['email', 'profile'],
   );
 

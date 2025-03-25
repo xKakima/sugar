@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "511559276850-a64rvj07blo1fh3p5r956nm75jrcte29.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.venxkakima.sugar",
+            "certificate_hash": "3ee8679dd480b9280ddbb31f24dfa173ccbc9a16"
+          }
+        },
+        {
           "client_id": "511559276850-3bip5mii1caom58sde2gllmvpotiihs1.apps.googleusercontent.com",
           "client_type": 3
         }
