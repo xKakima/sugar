@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sugar/features/sugar_funds/views/sugar_funds_content.dart.dart';
 import 'package:sugar/shared/constants/app_colors.dart';
 import 'package:sugar/features/home/controllers/home_page_controller.dart';
 import 'package:sugar/features/sugar_funds/views/sugar_funds_page.dart';

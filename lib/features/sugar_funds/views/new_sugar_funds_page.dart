@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:sugar/features/sugar_funds/controllers/sugar_funds_page_controller.dart';
 import 'package:sugar/features/sugar_funds/views/new_sugar_funds_header.dart';
 import 'package:sugar/features/sugar_funds/views/sugar_funds_content.dart.dart';
+import 'package:sugar/shared/widgets/animated_container_widget.dart';
 import 'package:sugar/shared/widgets/base_page_layout.dart';
 
 // TODO DOUBLE CHECK EVERYTHING SINCE AI MADE IT
@@ -14,24 +15,29 @@ class NewSugarFundsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BasePageLayout(
-        showFooter: true,
-        header: Obx(
-          () => SugarFundsHeader(
-            welcomeText: "test",
+      body: Stack(
+        children: [
+          BasePageLayout(
+            showFooter: true,
+            header: Obx(
+              () => SugarFundsHeader(
+                welcomeText: "test",
+              ),
+            ),
+            onFooterButtonPressed: () => controller.addExpenseState(),
+            child: const SizedBox(),
           ),
-        ),
-        onFooterButtonPressed: () => controller.addExpenseState(),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Obx(
-            () => HomeContent(
-              sugarFundsBalance: controller.sugarFundsBalance.value,
-              balanceBoxWidgets: controller.balanceBoxWidgets,
-              isLoading: controller.isLoading.value,
+          Obx(
+            () => AnimatedContainerWidget(
+              height: controller.isExpanded.value ? 0.84 : 0.75,
+              child: HomeContent(
+                sugarFundsBalance: controller.sugarFundsBalance.value,
+                balanceBoxWidgets: controller.balanceBoxWidgets,
+                isLoading: controller.isLoading.value,
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
