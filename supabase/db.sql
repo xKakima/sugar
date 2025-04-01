@@ -306,7 +306,7 @@ BEGIN
 
             -- Update the monthly budget balance
             UPDATE sugar.monthly_budget
-            SET balance = rec.budget, updated_at = NOW()
+            SET balance = rec.budget + balance, updated_at = NOW()
             WHERE sugar.monthly_budget.id = rec.id;
 
             -- Update the personal budget balance and initialize daily budget
